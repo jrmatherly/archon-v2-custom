@@ -12,7 +12,7 @@ Archon is a **microservices-based engine** that provides AI coding assistants wi
 
 Archon uses true microservices architecture with clear separation of concerns:
 
-```
+```mermaid
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend UI   │    │  Server (API)   │    │   MCP Server    │    │ Agents Service  │
 │                 │    │                 │    │                 │    │                 │
@@ -52,17 +52,17 @@ Archon uses true microservices architecture with clear separation of concerns:
 
 ### Prerequisites
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) 
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Supabase](https://supabase.com/) account (free tier works)
 - [OpenAI API key](https://platform.openai.com/api-keys) or alternative LLM provider
 - Basic knowledge of Python (FastAPI) and TypeScript (React)
-
 
 ### Initial Setup
 
 After forking the repository, you'll need to:
 
 1. **Environment Configuration**
+
    ```bash
    cp .env.example .env
    # Edit .env with your Supabase credentials
@@ -72,12 +72,13 @@ After forking the repository, you'll need to:
    - Run `migration/complete_setup.sql` in your Supabase SQL Editor
 
 3. **Start Development Environment**
+
    ```bash
    docker-compose up --build -d
    ```
 
 4. **Configure API Keys**
-   - Open http://localhost:3737
+   - Open <http://localhost:3737>
    - Go to Settings → Add your OpenAI API key
 
 ## 🔄 Contribution Process
@@ -85,16 +86,19 @@ After forking the repository, you'll need to:
 ### 1. Choose Your Contribution
 
 **Bug Fixes:**
+
 - Check existing issues for reported bugs
 - Create detailed reproduction steps
 - Fix in smallest possible scope
 
 **New Features:**
+
 - Optional: Open an issue first to discuss the feature
 - Get feedback on approach and architecture (from maintainers and/or AI coding assistants)
 - Break large features into smaller PRs
 
 **Documentation:**
+
 - Look for gaps in current documentation
 - Focus on user-facing improvements
 - Update both code docs and user guides
@@ -102,7 +106,7 @@ After forking the repository, you'll need to:
 ### 2. Development Process
 
 1. **Fork the Repository**
-   - Go to https://github.com/coleam00/archon
+   - Go to <https://github.com/coleam00/archon>
    - Click the "Fork" button in the top right corner
    - This creates your own copy of the repository
 
@@ -127,7 +131,7 @@ After forking the repository, you'll need to:
    These rules contain essential context about Archon's architecture, service patterns, MCP implementation, and development best practices. Using them will help your AI assistant follow our conventions and implement features correctly.
 
 3. **Create Feature Branch**
-   
+
    **Best Practice**: Always create a feature branch rather than working directly on main. This keeps your main branch clean and makes it easier to sync with the upstream repository.
 
    ```bash
@@ -149,6 +153,7 @@ After forking the repository, you'll need to:
 ### 3. Submit Pull Request
 
 1. **Push to Your Fork**
+
    ```bash
    # First time pushing this branch
    git push -u origin feature/your-feature-name
@@ -158,7 +163,7 @@ After forking the repository, you'll need to:
    ```
 
 2. **Create Pull Request via GitHub UI**
-   - Go to your fork on GitHub (https://github.com/your-username/archon)
+   - Go to your fork on GitHub (<https://github.com/your-username/archon>)
    - Click "Contribute" then "Open pull request"
    - GitHub will automatically detect your branch and show a comparison
    - The PR template will be automatically filled in the description
@@ -174,6 +179,7 @@ After forking the repository, you'll need to:
    - [ ] Docker builds succeed for all services
 
    **Test commands:**
+
    ```bash
    # Backend tests
    cd python && python -m pytest
@@ -196,18 +202,21 @@ After forking the repository, you'll need to:
 ### 🔧 Backend Services (Python)
 
 **When to contribute:**
+
 - Adding new API endpoints or business logic
 - Implementing new MCP tools
 - Creating new service classes or utilities
 - Improving crawling, embedding, or search functionality (everything for RAG)
 
 **Key locations:**
+
 - **Service Layer**: `python/src/server/services/` - Core business logic organized by domain
 - **API Endpoints**: `python/src/server/fastapi/` - REST API route handlers  
 - **MCP Tools**: `python/src/mcp/modules/` - MCP protocol implementations
 - **Agents**: `python/src/agents/` - PydanticAI agent implementations
 
 **Development patterns:**
+
 - Services use dependency injection with `supabase_client` parameter
 - Use async/await for I/O operations, sync for pure logic
 - Follow service → API → MCP layer separation
@@ -215,18 +224,21 @@ After forking the repository, you'll need to:
 ### 🎨 Frontend (React/TypeScript)
 
 **When to contribute:**
+
 - Adding new UI components or pages
 - Implementing real-time features with Socket.IO
 - Creating new service integrations
 - Improving user experience and accessibility
 
 **Key locations:**
+
 - **Components**: `archon-ui-main/src/components/` - Reusable UI components organized by feature
 - **Pages**: `archon-ui-main/src/pages/` - Main application routes
 - **Services**: `archon-ui-main/src/services/` - API communication and business logic
 - **Contexts**: `archon-ui-main/src/contexts/` - React context providers for global state
 
 **Development patterns:**
+
 - Context-based state management (no Redux)
 - Service layer abstraction for API calls
 - Socket.IO for real-time updates
@@ -235,12 +247,14 @@ After forking the repository, you'll need to:
 ### 🐳 Infrastructure (Docker/DevOps)
 
 **When to contribute:**
+
 - Optimizing container builds or sizes
 - Improving service orchestration
 - Adding new environment configurations
 - Enhancing health checks and monitoring
 
 **Key locations:**
+
 - **Docker**: `python/Dockerfile.*` - Service-specific containers
 - **Compose**: `docker-compose.yml` - Service orchestration
 - **Config**: `.env.example` - Environment variable documentation
@@ -248,12 +262,14 @@ After forking the repository, you'll need to:
 ### 📚 Documentation
 
 **When to contribute:**
+
 - Adding API documentation
 - Creating deployment guides
 - Writing feature tutorials
 - Improving architecture explanations
 
 **Key locations:**
+
 - **Docs Site**: `docs/docs/` - Docusaurus-based documentation
 - **API Docs**: Auto-generated from FastAPI endpoints
 - **README**: Main project documentation
@@ -263,6 +279,7 @@ After forking the repository, you'll need to:
 ### Backend Development (Python)
 
 1. **Adding a New Service**
+
    ```bash
    # Create service class in appropriate domain
    python/src/server/services/your_domain/your_service.py
@@ -275,6 +292,7 @@ After forking the repository, you'll need to:
    ```
 
 2. **Testing Your Changes**
+
    ```bash
    # Run Python tests
    cd python && python -m pytest tests/
@@ -285,6 +303,7 @@ After forking the repository, you'll need to:
    ```
 
 3. **Code Quality**
+
    ```bash
    # We encourage you to use linters for all code
    # Follow service patterns from existing code
@@ -293,6 +312,7 @@ After forking the repository, you'll need to:
 ### Frontend Development (React)
 
 1. **Adding a New Component**
+
    ```bash
    # Create in appropriate category
    archon-ui-main/src/components/your-category/YourComponent.tsx
@@ -302,6 +322,7 @@ After forking the repository, you'll need to:
    ```
 
 2. **Testing Your Changes**
+
    ```bash
    # Run frontend tests
    cd archon-ui-main && npm run test
@@ -314,6 +335,7 @@ After forking the repository, you'll need to:
    ```
 
 3. **Development Server**
+
    ```bash
    # For faster iteration, run frontend locally
    cd archon-ui-main && npm run dev
@@ -360,6 +382,7 @@ After forking the repository, you'll need to:
 ### Adding New MCP Tools
 
 **Tool Pattern:**
+
 ```python
 @mcp.tool()
 async def your_new_tool(ctx: Context, param: str) -> str:
@@ -381,6 +404,7 @@ async def your_new_tool(ctx: Context, param: str) -> str:
 ### Adding New Service Classes
 
 **Service Pattern:**
+
 ```python
 class YourService:
     def __init__(self, supabase_client=None):
@@ -408,11 +432,13 @@ class YourService:
 ### Code Review Process
 
 **As a Contributor:**
+
 - Write clear PR descriptions
 - Respond promptly to review feedback
 - Test your changes thoroughly
 
 **As a Reviewer:**
+
 - Focus on architecture, correctness, and user impact
 - Provide specific, actionable feedback
 - Acknowledge good practices and improvements
@@ -425,6 +451,7 @@ class YourService:
 ## 🎖️ Recognition
 
 Contributors receive:
+
 - **Attribution**: Recognition in release notes and documentation
 - **Maintainer Track**: Path to maintainer role for consistent contributors  
 - **Community Impact**: Help improve AI development workflows for thousands of users

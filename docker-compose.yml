@@ -26,6 +26,7 @@ services:
       ]
     networks:
       - aanai
+      - proxy
     ports:
       - "${ARCHON_SERVER_PORT:-8181}:${ARCHON_SERVER_PORT:-8181}"
     volumes:
@@ -45,6 +46,16 @@ services:
       - ARCHON_MCP_PORT=${ARCHON_MCP_PORT:-8051}
       - MCP_SERVICE_URL=http://archon-mcp:${ARCHON_MCP_PORT:-8051}
       - ARCHON_AGENTS_PORT=${ARCHON_AGENTS_PORT:-8052}
+    labels:
+      - "traefik.enable=true"
+      # HTTP Routers
+      - "traefik.http.routers.archon-api-rtr.entrypoints=websecure"
+      - "traefik.http.routers.archon-api-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`) && PathPrefix(`/api`)"
+      # Middlewares
+      - "traefik.http.routers.archon-api-rtr.middlewares=chain-no-auth@file"
+      # HTTP Services
+      - "traefik.http.routers.archon-api-rtr.service=archon-server-svc"
+      - "traefik.http.services.archon-server-svc.loadbalancer.server.port=${ARCHON_SERVER_PORT:-8181}"
 
     healthcheck:
       test:
@@ -74,8 +85,10 @@ services:
     container_name: archon-mcp
     networks:
       - aanai
+      - proxy
     ports:
-      - "${ARCHON_MCP_PORT:-8051}:${ARCHON_MCP_PORT:-8051}" # Disabled: Traefik handles external port 8051
+      - "${ARCHON_MCP_PORT:-8051}:${ARCHON_MCP_PORT:-8051}"
+      - "8055:8055"
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
@@ -87,6 +100,16 @@ services:
       - API_SERVICE_URL=http://archon-server:${ARCHON_SERVER_PORT:-8181}
       - AGENTS_SERVICE_URL=http://archon-agents:${ARCHON_AGENTS_PORT:-8052}
       - ARCHON_MCP_PORT=${ARCHON_MCP_PORT:-8051}
+    labels:
+      - "traefik.enable=true"
+      # HTTP Routers (using custom MCP entrypoint)
+      - "traefik.http.routers.archon-mcp-rtr.entrypoints=mcpsecure"
+      - "traefik.http.routers.archon-mcp-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`) && PathPrefix(`/mcp`)"
+      # Middlewares
+      - "traefik.http.routers.archon-mcp-rtr.middlewares=chain-no-auth@file"
+      # HTTP Services
+      - "traefik.http.routers.archon-mcp-rtr.service=archon-mcp-svc"
+      - "traefik.http.services.archon-mcp-svc.loadbalancer.server.port=8055"
 
     depends_on:
       - archon-server
@@ -122,6 +145,7 @@ services:
       - aanai
     ports:
       - "${ARCHON_AGENTS_PORT:-8052}:${ARCHON_AGENTS_PORT:-8052}"
+    #  - "8056:8056" # Direct External Access through Traefik
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
@@ -162,9 +186,20 @@ services:
       - HOST=${HOST:-localhost}
     networks:
       - aanai
+      - proxy
     volumes:
       - ./archon-ui-main/src:/app/src
       - ./archon-ui-main/public:/app/public
+    labels:
+      - "traefik.enable=true"
+      # HTTP Routers
+      - "traefik.http.routers.archon-rtr.entrypoints=websecure"
+      - "traefik.http.routers.archon-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`) && !PathPrefix(`/api`)"
+      # Middlewares
+      - "traefik.http.routers.archon-rtr.middlewares=chain-no-auth@file"
+      # HTTP Services
+      - "traefik.http.routers.archon-rtr.service=archon-svc"
+      - "traefik.http.services.archon-svc.loadbalancer.server.port=5173"
 
     depends_on:
       - archon-server
@@ -186,9 +221,16 @@ services:
     container_name: archon-docs
     networks:
       - aanai
+      - proxy
     ports:
       - "${ARCHON_DOCS_PORT:-3838}:80"
-# networks:
-#   aanai:
-#     driver: bridge
-#     external: true
+    labels:
+      - "traefik.enable=true"
+      # HTTP Routers
+      - "traefik.http.routers.archon-docs-rtr.entrypoints=websecure"
+      - "traefik.http.routers.archon-docs-rtr.rule=Host(`aanai-archondocs.${DOMAIN_NAME}`)"
+      # Middlewares
+      - "traefik.http.routers.archon-docs-rtr.middlewares=chain-no-auth@file"
+      # HTTP Services
+      - "traefik.http.routers.archon-docs-rtr.service=archon-docs-svc"
+      - "traefik.http.services.archon-docs-svc.loadbalancer.server.port=80"

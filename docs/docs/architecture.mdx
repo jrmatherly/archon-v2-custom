@@ -36,16 +36,16 @@ Database (Supabase/pgvector)
 
 ### Service Layer Organization
 
-| Service Category | Services | Purpose |
-|-----------------|----------|---------|
-| **RAG Services** | `CrawlingService` | Web crawling operations |
-| **Storage Services** | `DocumentStorageService`<br/>`BaseStorageService` | Document storage and processing |
-| **Search Services** | `SearchService` | Vector search and RAG queries |
-| **Core Services** | `SourceManagementService` | Knowledge source management |
-| **Project Services** | `ProjectService`<br/>`TaskService`<br/>`DocumentService`<br/>`VersioningService` | Project management |
-| **Core Services** | `CredentialService`<br/>`PromptService`<br/>`ThreadingService` | System utilities |
-| **Storage Services** | `add_documents_to_supabase`<br/>`extract_code_blocks`<br/>`add_code_examples_to_supabase` | Data persistence |
-| **Embedding Services** | `create_embeddings_batch`<br/>`generate_contextual_embedding` | Vector operations |
+| Service Category       | Services                                                                                  | Purpose                         |
+| ---------------------- | ----------------------------------------------------------------------------------------- | ------------------------------- |
+| **RAG Services**       | `CrawlingService`                                                                         | Web crawling operations         |
+| **Storage Services**   | `DocumentStorageService`<br/>`BaseStorageService`                                         | Document storage and processing |
+| **Search Services**    | `SearchService`                                                                           | Vector search and RAG queries   |
+| **Core Services**      | `SourceManagementService`                                                                 | Knowledge source management     |
+| **Project Services**   | `ProjectService`<br/>`TaskService`<br/>`DocumentService`<br/>`VersioningService`          | Project management              |
+| **Core Services**      | `CredentialService`<br/>`PromptService`<br/>`ThreadingService`                            | System utilities                |
+| **Storage Services**   | `add_documents_to_supabase`<br/>`extract_code_blocks`<br/>`add_code_examples_to_supabase` | Data persistence                |
+| **Embedding Services** | `create_embeddings_batch`<br/>`generate_contextual_embedding`                             | Vector operations               |
 
 ### Access Patterns
 
@@ -74,6 +74,7 @@ async def delete_source(ctx: Context, source: str) -> str:
 ## Key Components
 
 ### Server Service (Port 8080)
+
 - FastAPI application
 - REST API endpoints
 - Socket.IO real-time communication
@@ -81,6 +82,7 @@ async def delete_source(ctx: Context, source: str) -> str:
 - Business logic implementation
 
 ### MCP Service (Port 8051)
+
 - MCP protocol server
 - 14 tools (7 RAG + 7 Project)
 - HTTP client for Server API
@@ -88,6 +90,7 @@ async def delete_source(ctx: Context, source: str) -> str:
 - SSE transport for AI clients
 
 ### Service Layer
+
 - Modular service classes
 - Shared by FastAPI endpoints
 - Contains all business logic
@@ -97,6 +100,7 @@ async def delete_source(ctx: Context, source: str) -> str:
 ## Data Flow Examples
 
 ### Delete Source Operation
+
 ```
 1. User clicks delete in UI
 2. UI calls DELETE /api/knowledge-items/{id}
@@ -114,6 +118,7 @@ OR
 ```
 
 ### Smart Crawl Operation (Simplified Socket.IO)
+
 ```
 1. User initiates crawl
 2. UI calls POST /api/knowledge-items/crawl
@@ -126,6 +131,7 @@ OR
 ```
 
 ### Task Update Flow (Simplified)
+
 ```
 1. MCP tool calls POST /api/tasks
 2. API endpoint creates task using TaskService
@@ -137,11 +143,13 @@ OR
 ## Simplified Real-Time Architecture
 
 ### Simplified Socket.IO (2025 Pattern)
+
 ```
 MCP Tools → HTTP API → Services → @sio.event → Rooms → UI
 ```
 
 Key improvements:
+
 - **No database polling** - Eliminated 2-second polling system
 - **Simple @sio.event handlers** - Official Socket.IO 2025 pattern
 - **Direct room management** - `sio.enter_room()` and `sio.emit()` calls

@@ -4,18 +4,17 @@ description: Quick start guide for running Archon
 sidebar_position: 10
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-import Admonition from '@theme/Admonition';
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import Admonition from "@theme/Admonition";
 
 # Deployment
 
 ## Quick Start
 
 <Admonition type="tip" title="Prerequisites">
-- Docker and Docker Compose installed
-- Supabase account (free tier works)
-- Git for cloning the repository
+  - Docker and Docker Compose installed - Supabase account (free tier works) -
+  Git for cloning the repository
 </Admonition>
 
 ### 1. Clone & Setup
@@ -57,7 +56,8 @@ docker-compose ps
 ## Hot Module Reload (HMR)
 
 <Admonition type="tip" title="Built-in Hot Reload">
-Archon automatically includes Hot Module Reload for both Python server and React UI. Code changes are reflected immediately without container rebuilds.
+  Archon automatically includes Hot Module Reload for both Python server and
+  React UI. Code changes are reflected immediately without container rebuilds.
 </Admonition>
 
 ### What Changes Without Rebuild
@@ -66,6 +66,7 @@ Archon automatically includes Hot Module Reload for both Python server and React
 <TabItem value="python" label="Python Server">
 
 **✅ No Rebuild Required:**
+
 - Python source code changes (`.py` files)
 - Configuration changes in code
 - Business logic updates
@@ -74,6 +75,7 @@ Archon automatically includes Hot Module Reload for both Python server and React
 - Service layer changes
 
 **❌ Rebuild Required:**
+
 - New pip dependencies in `requirements.*.txt`
 - System package installations
 - Dockerfile modifications
@@ -83,6 +85,7 @@ Archon automatically includes Hot Module Reload for both Python server and React
 <TabItem value="frontend" label="React UI">
 
 **✅ No Rebuild Required:**
+
 - React components (`.tsx`, `.jsx`)
 - CSS/Tailwind styles
 - TypeScript code
@@ -90,6 +93,7 @@ Archon automatically includes Hot Module Reload for both Python server and React
 - Vite configuration (most changes)
 
 **❌ Rebuild Required:**
+
 - New npm dependencies in `package.json`
 - Node version changes
 - Build tool configurations
@@ -101,12 +105,14 @@ Archon automatically includes Hot Module Reload for both Python server and React
 ### How HMR Works
 
 **Python Server:**
+
 - Uses `uvicorn --reload`
 - Watches file changes automatically
 - Restarts on save
 - WebSocket connections re-establish after reload
 
 **React UI:**
+
 - Vite's built-in HMR
 - Component state preserved when possible
 - CSS updates without page reload
@@ -115,6 +121,7 @@ Archon automatically includes Hot Module Reload for both Python server and React
 ### Tips
 
 1. **Monitor Logs**: Watch for reload messages
+
    ```bash
    docker logs -f Archon-Server
    ```
@@ -124,10 +131,8 @@ Archon automatically includes Hot Module Reload for both Python server and React
 3. **State Persistence**: Server state resets on reload, but database state persists
 
 <Admonition type="warning" title="MCP Service Note">
-The MCP service doesn't support hot reload. Restart manually after changes:
-```bash
-docker-compose restart archon-mcp
-```
+  The MCP service doesn't support hot reload. Restart manually after changes:
+  ```bash docker-compose restart archon-mcp ```
 </Admonition>
 
 ## Service Architecture
@@ -138,7 +143,7 @@ graph LR
         Browser[Web Browser<br/>localhost:3737]
         IDE[VS Code/Cursor<br/>localhost:8051]
     end
-    
+
     subgraph "Docker Containers"
         Frontend[archon-frontend<br/>React UI]
         API[Archon-Server<br/>FastAPI + Socket.IO]
@@ -146,12 +151,12 @@ graph LR
         Agents[archon-agents<br/>AI Processing]
         Docs[archon-docs<br/>Documentation]
     end
-    
+
     subgraph "Cloud Services"
         Supabase[Supabase<br/>Database]
         OpenAI[OpenAI<br/>AI Models]
     end
-    
+
     Browser --> Frontend
     IDE --> MCP
     Frontend --> API
@@ -160,7 +165,7 @@ graph LR
     API --> Supabase
     Agents --> OpenAI
     MCP --> Supabase
-    
+
     style Frontend fill:#1a1a2e,stroke:#00d4ff,stroke-width:2px,color:#fff
     style API fill:#1a1a2e,stroke:#00d4ff,stroke-width:2px,color:#fff
     style MCP fill:#1a1a2e,stroke:#00d4ff,stroke-width:2px,color:#fff
@@ -214,11 +219,9 @@ docker-compose up -d --build
 ## Advanced Configuration
 
 <Admonition type="info" title="Scaling Archon">
-For team deployments, consider:
-- Using a reverse proxy (nginx/Caddy) for multiple users
-- Setting up SSL certificates for secure connections
-- Configuring resource limits based on usage
-- Using managed Supabase instances
+  For team deployments, consider: - Using a reverse proxy (nginx/Caddy) for
+  multiple users - Setting up SSL certificates for secure connections -
+  Configuring resource limits based on usage - Using managed Supabase instances
 </Admonition>
 
 ## Database Management
@@ -226,7 +229,7 @@ For team deployments, consider:
 ### Reset Database
 
 <Admonition type="warning" title="Data Loss Warning">
-This will delete ALL data in your database!
+  This will delete ALL data in your database!
 </Admonition>
 
 ```sql
@@ -282,4 +285,4 @@ Your Archon instance is now running. Next:
 2. **Configure MCP** for AI agents
 3. **Start crawling** knowledge sources
 4. **Create projects** and tasks
-</Admonition> 
+   </Admonition>
