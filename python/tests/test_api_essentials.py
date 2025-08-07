@@ -37,10 +37,17 @@ def test_create_project(client, test_project, mock_supabase_client):
     assert "message" in data
 
 
-def test_list_projects(client, mock_supabase_client):
+@patch("src.server.fastapi.projects_api.ProjectService")
+@patch("src.server.fastapi.projects_api.SourceLinkingService")
+def test_list_projects(mock_source_service, mock_project_service, client):
     """Test listing projects endpoint exists and responds."""
-    # Set up mock to return empty list (no projects)
-    mock_supabase_client.table.return_value.select.return_value.execute.return_value.data = []
+    # Mock ProjectService to return success with empty projects
+    mock_project_service_instance = mock_project_service.return_value
+    mock_project_service_instance.list_projects.return_value = (True, {"projects": []})
+
+    # Mock SourceLinkingService to return formatted empty list
+    mock_source_service_instance = mock_source_service.return_value
+    mock_source_service_instance.format_projects_with_sources.return_value = []
 
     response = client.get("/api/projects")
     assert response.status_code == 200
@@ -50,8 +57,11 @@ def test_list_projects(client, mock_supabase_client):
     # With empty mock data, should return empty list
     assert len(data) == 0
 
-    # Verify mock was called
-    assert mock_supabase_client.table.called
+    # Verify services were called
+    mock_project_service_instance.list_projects.assert_called_once()
+    mock_source_service_instance.format_projects_with_sources.assert_called_once_with(
+        []
+    )
 
 
 def test_create_task(client, test_task):

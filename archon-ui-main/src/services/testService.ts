@@ -187,51 +187,59 @@ class TestService {
         throw new Error(`Failed to start tests: ${response.status} ${response.statusText}`);
       }
 
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No response body reader available');
-      }
-
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
+      // Get the execution_id from the response
+      const responseData = await response.json();
+      const actualExecutionId = responseData.execution_id;
+      
+      // Connect to WebSocket for real-time updates
+      const wsUrl = `${getApiUrl().replace('http', 'ws')}/api/tests/stream/${actualExecutionId}`;
+      const ws = new WebSocket(wsUrl);
+      
+      return new Promise((resolve, reject) => {
+        ws.onopen = () => {
+          console.log(`WebSocket connected for execution ${actualExecutionId}`);
+        };
         
-        if (done) break;
-        
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete line in buffer
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              
-              // Forward the real test output with our execution_id
-              onMessage({
-                ...data,
-                execution_id
-              });
-              
-              if (data.type === 'completed') {
-                onComplete?.();
-                return execution_id;
-              }
-              
-              if (data.type === 'error') {
-                onError?.(new Error(data.message));
-                return execution_id;
-              }
-            } catch (e) {
-              console.warn('Failed to parse SSE message:', line);
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            
+            // Forward the message with our execution_id
+            onMessage({
+              ...data,
+              execution_id: actualExecutionId
+            });
+            
+            if (data.type === 'completed') {
+              ws.close();
+              onComplete?.();
+              resolve(actualExecutionId);
             }
+            
+            if (data.type === 'error') {
+              ws.close();
+              onError?.(new Error(data.message));
+              reject(new Error(data.message));
+            }
+          } catch (e) {
+            console.warn('Failed to parse WebSocket message:', event.data);
           }
-        }
-      }
-
-      return execution_id;
+        };
+        
+        ws.onerror = (error) => {
+          console.error(`WebSocket error for execution ${actualExecutionId}:`, error);
+          onError?.(new Error('WebSocket connection failed'));
+          reject(new Error('WebSocket connection failed'));
+        };
+        
+        ws.onclose = (event) => {
+          console.log(`WebSocket closed for execution ${actualExecutionId}`);
+          if (event.code !== 1000) {
+            onComplete?.();
+            resolve(actualExecutionId);
+          }
+        };
+      });
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
