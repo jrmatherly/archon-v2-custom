@@ -105,10 +105,9 @@ services:
       - "traefik.enable=true"
       # HTTP Routers (using custom MCP entrypoint)
       - "traefik.http.routers.archon-mcp-rtr.entrypoints=websecure"
-      - "traefik.http.routers.archon-mcp-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`) && PathPrefix(`/mcp`)"
+      - "traefik.http.routers.archon-mcp-rtr.rule=Host(`aanai-mcp.${DOMAIN_NAME}`)"
       # Middlewares
-      - "traefik.http.middlewares.mcp-stripprefix.stripprefix.prefixes=/mcp"
-      - "traefik.http.routers.archon-mcp-rtr.middlewares=chain-no-auth@file,mcp-stripprefix"
+      - "traefik.http.routers.archon-mcp-rtr.middlewares=chain-no-auth@file"
       # HTTP Services
       - "traefik.http.routers.archon-mcp-rtr.service=archon-mcp-svc"
       - "traefik.http.services.archon-mcp-svc.loadbalancer.server.port=${ARCHON_MCP_PORT:-8051}"
