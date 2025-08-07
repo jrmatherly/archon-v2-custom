@@ -231,15 +231,37 @@ export const MCPPage = () => {
 		showToast("Opening Cursor with Archon MCP configuration...", "info");
 	};
 
+	/**
+	 * Get dynamic MCP URL based on environment configuration
+	 * Always expects full URLs for clarity and consistency
+	 */
+	const getDynamicMcpUrl = (): string => {
+		// Priority 1: Use explicit full URL from environment
+		// Production: https://your-domain.com/mcp
+		// Local: http://localhost:8051/mcp
+		if (import.meta.env.VITE_MCP_URL) {
+			return import.meta.env.VITE_MCP_URL;
+		}
+		
+		// Priority 2: Dynamic construction fallback (when VITE_MCP_URL not set)
+		const protocol = window.location.protocol;
+		const host = window.location.hostname;
+		const port = import.meta.env.ARCHON_MCP_PORT || "8051";
+		return `${protocol}//${host}:${port}/mcp`;
+	};
+
 	const getConfigForIDE = (ide: "windsurf" | "cursor" | "claudecode") => {
 		if (!config) return "";
+
+		// Get the dynamic MCP URL instead of hardcoded host:port
+		const mcpUrl = getDynamicMcpUrl();
 
 		if (ide === "cursor") {
 			// Cursor connecting to Streamable HTTP server
 			const cursorConfig = {
 				mcpServers: {
 					archon: {
-						url: `http://${config.host}:${config.port}/mcp`,
+						url: mcpUrl,
 					},
 				},
 			};
@@ -249,7 +271,7 @@ export const MCPPage = () => {
 			const windsurfConfig = {
 				mcpServers: {
 					archon: {
-						serverUrl: `http://${config.host}:${config.port}/mcp`,
+						serverUrl: mcpUrl,
 					},
 				},
 			};
@@ -259,7 +281,7 @@ export const MCPPage = () => {
 			const claudeConfig = {
 				name: "archon",
 				transport: "http",
-				url: `http://${config.host}:${config.port}/mcp`,
+				url: mcpUrl,
 			};
 			return JSON.stringify(claudeConfig, null, 2);
 		}

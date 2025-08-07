@@ -441,16 +441,17 @@ class MCPClientService {
 
 	/**
 	 * Get MCP URL based on environment configuration
-	 * Priority: VITE_MCP_URL > Dynamic construction > Fallback
+	 * Always expects full URLs for clarity and consistency
 	 */
 	private getMcpUrl(): string {
-		// Priority 1: Use explicit environment variable (Docker/Traefik: /mcp, Local: full URL)
+		// Priority 1: Use explicit full URL from environment
+		// Production: https://your-domain.com/mcp
+		// Local: http://localhost:8051/mcp
 		if (import.meta.env.VITE_MCP_URL) {
 			return import.meta.env.VITE_MCP_URL;
 		}
 		
-		// Priority 2: Dynamic construction for local development
-		// Note: This runs when VITE_MCP_URL is not set (local dev without Docker)
+		// Priority 2: Dynamic construction fallback (when VITE_MCP_URL not set)
 		const protocol = window.location.protocol;
 		const host = window.location.hostname;
 		const port = import.meta.env.ARCHON_MCP_PORT || "8051";
