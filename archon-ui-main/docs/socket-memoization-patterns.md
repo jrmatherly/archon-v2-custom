@@ -2,14 +2,16 @@
 
 ## Quick Reference
 
-### DO:
+### DO
+
 - ✅ Track optimistic updates to prevent double-renders
 - ✅ Memoize socket event handlers with useCallback
 - ✅ Check if incoming data actually differs from current state
 - ✅ Use debouncing for rapid UI updates (drag & drop)
 - ✅ Clean up socket listeners in useEffect cleanup
 
-### DON'T:
+### DON'T
+
 - ❌ Update state without checking if data changed
 - ❌ Create new handler functions on every render
 - ❌ Apply server updates that match pending optimistic updates
