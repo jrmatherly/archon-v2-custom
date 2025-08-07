@@ -85,10 +85,11 @@ services:
     container_name: archon-mcp
     networks:
       - aanai
-      - proxy
+    #  - proxy
     ports:
       - "${ARCHON_MCP_PORT:-8051}:${ARCHON_MCP_PORT:-8051}"
-    #  - "8055:8055"
+    # expose:
+    #  - 8055
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
@@ -100,17 +101,17 @@ services:
       - API_SERVICE_URL=http://archon-server:${ARCHON_SERVER_PORT:-8181}
       - AGENTS_SERVICE_URL=http://archon-agents:${ARCHON_AGENTS_PORT:-8052}
       - ARCHON_MCP_PORT=${ARCHON_MCP_PORT:-8051}
-    labels:
-      - "traefik.enable=true"
-      # HTTP Routers (using custom MCP entrypoint)
-      - "traefik.http.routers.archon-mcp-rtr.entrypoints=mcpsecure"
-      - "traefik.http.routers.archon-mcp-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`) && PathPrefix(`/mcp-api`)"
-      # Middlewares
-      - "traefik.http.middlewares.mcp-stripprefix.stripprefix.prefixes=/mcp-api"
-      - "traefik.http.routers.archon-mcp-rtr.middlewares=chain-no-auth@file,mcp-stripprefix"
-      # HTTP Services
-      - "traefik.http.routers.archon-mcp-rtr.service=archon-mcp-svc"
-      - "traefik.http.services.archon-mcp-svc.loadbalancer.server.port=8051"
+    #labels:
+    #  - "traefik.enable=true"
+    # HTTP Routers (using custom MCP entrypoint)
+    #  - "traefik.http.routers.archon-mcp-rtr.entrypoints=mcpsecure"
+    #  - "traefik.http.routers.archon-mcp-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`) && PathPrefix(`/mcp-api`)"
+    # Middlewares
+    #  - "traefik.http.middlewares.mcp-stripprefix.stripprefix.prefixes=/mcp-api"
+    #  - "traefik.http.routers.archon-mcp-rtr.middlewares=chain-no-auth@file,mcp-stripprefix"
+    # HTTP Services
+    #  - "traefik.http.routers.archon-mcp-rtr.service=archon-mcp-svc"
+    #  - "traefik.http.services.archon-mcp-svc.loadbalancer.server.port=8055"
 
     depends_on:
       - archon-server

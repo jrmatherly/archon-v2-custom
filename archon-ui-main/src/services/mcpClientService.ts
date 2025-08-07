@@ -447,7 +447,7 @@ class MCPClientService {
 			name: "Archon",
 			transport_type: "http",
 			connection_config: {
-				url: import.meta.env.VITE_MCP_URL || "http://localhost:8051/mcp-api",
+				url: import.meta.env.VITE_MCP_URL || "http://archon-mcp:8051/mcp",
 			},
 			auto_connect: true,
 			health_check_interval: 30,
