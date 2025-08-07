@@ -53,7 +53,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           console.log('📋 Backend health check:', healthData);
           
           // Check if backend is truly ready (not just started)
-          if (healthData.ready === true) {
+          // Accept both ready=true OR status=healthy as fully initialized
+          if (healthData.ready === true || (healthData.status === 'healthy' && healthData.ready !== false)) {
             console.log('✅ Backend is fully initialized, checking credentials...');
             setBackendReady(true);
             
