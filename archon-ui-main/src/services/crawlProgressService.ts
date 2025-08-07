@@ -112,7 +112,7 @@ class CrawlProgressService {
   async streamProgress(
     progressId: string,
     onMessage: ProgressCallback,
-    options: StreamProgressOptions = {}
+    _options: StreamProgressOptions = {}
   ): Promise<void> {
     console.log(`🚀 Starting Socket.IO progress stream for ${progressId}`);
 
@@ -422,8 +422,7 @@ class CrawlProgressService {
     console.log(`📊 Active subscriptions before cleanup: ${this.activeSubscriptions.size}`);
     console.log(`📊 Active handlers before cleanup: ${this.messageHandlers.size}`);
     
-    // Log the call stack to see what's triggering disconnects
-    console.warn('⚠️ disconnect() called from:', new Error().stack);
+    // Cleanup called during normal component unmount
     
     this.stopAllStreams();
     this.isConnected = false;
