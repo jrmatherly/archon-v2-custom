@@ -188,7 +188,7 @@ class MCPServerService {
     // Close existing connection if any
     this.disconnectLogs();
 
-    const ws = new WebSocket(`${getWebSocketUrl()}/api/mcp/logs/stream`);
+    const ws = new WebSocket(`${getWebSocketUrl()}/mcp/logs/stream`);
     this.logWebSocket = ws;
 
     ws.onmessage = (event) => {
