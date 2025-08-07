@@ -41,8 +41,13 @@
 }
 /* Glow animations */
 @keyframes toggleGlow {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.3); }
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.3);
+  }
 }
 /* Color variants */
 .toggle-purple {

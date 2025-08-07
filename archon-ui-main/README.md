@@ -65,12 +65,14 @@ archon-ui-main/
 The central control panel for the MCP server.
 
 **Components:**
+
 - **Server Control Panel**: Start/stop server, view status, select transport mode
 - **Server Logs Viewer**: Real-time log streaming with auto-scroll
 - **Available Tools Table**: Dynamic tool discovery and documentation
 - **MCP Test Panel**: Interactive tool testing interface
 
 **Features:**
+
 - Dual transport support (SSE/stdio)
 - Real-time status polling (5-second intervals)
 - WebSocket-based log streaming
@@ -82,7 +84,8 @@ The central control panel for the MCP server.
 Comprehensive configuration management.
 
 **Sections:**
-- **Credentials**: 
+
+- **Credentials**:
   - OpenAI API key (encrypted storage)
   - Supabase connection details
   - MCP server configuration
@@ -93,6 +96,7 @@ Comprehensive configuration management.
   - Reranking toggle
 
 **Features:**
+
 - Secure credential storage with encryption
 - Real-time validation
 - Toast notifications for actions
@@ -103,12 +107,14 @@ Comprehensive configuration management.
 Interface for crawling documentation sites.
 
 **Components:**
+
 - **URL Input**: Smart URL validation
 - **Crawl Options**: Max depth, concurrent sessions
 - **Progress Monitoring**: Real-time crawl status
 - **Results Summary**: Pages crawled, chunks stored
 
 **Features:**
+
 - Intelligent URL type detection
 - Sitemap support
 - Recursive crawling
@@ -119,12 +125,14 @@ Interface for crawling documentation sites.
 Browse and manage your knowledge items.
 
 **Components:**
+
 - **Knowledge Grid**: Card-based knowledge display
 - **Search/Filter**: Search by title, type, tags
 - **Knowledge Details**: View full item details
 - **Actions**: Delete, refresh, organize
 
 **Features:**
+
 - Pagination support
 - Real-time updates via WebSocket
 - Type-based filtering (technical/business)
@@ -135,12 +143,14 @@ Browse and manage your knowledge items.
 Interactive chat interface for testing RAG queries.
 
 **Components:**
+
 - **Chat Messages**: Threaded conversation view
 - **Input Area**: Query input with source selection
 - **Results Display**: Formatted RAG results
 - **Source Selector**: Filter by knowledge source
 
 **Features:**
+
 - Real-time streaming responses
 - Source attribution
 - Markdown rendering
@@ -151,6 +161,7 @@ Interactive chat interface for testing RAG queries.
 ### Base UI Components
 
 #### Button
+
 ```tsx
 <Button 
   variant="primary|secondary|ghost" 
@@ -163,6 +174,7 @@ Interactive chat interface for testing RAG queries.
 ```
 
 #### Card
+
 ```tsx
 <Card accentColor="blue" className="p-6">
   <h3>Card Title</h3>
@@ -171,6 +183,7 @@ Interactive chat interface for testing RAG queries.
 ```
 
 #### LoadingSpinner
+
 ```tsx
 <LoadingSpinner size="sm|md|lg" />
 ```
@@ -178,12 +191,14 @@ Interactive chat interface for testing RAG queries.
 ### Layout Components
 
 #### Sidebar
+
 - Collapsible navigation
 - Active route highlighting
 - Icon + text navigation items
 - Responsive design
 
 #### Header
+
 - Dark mode toggle
 - User menu
 - Breadcrumb navigation
@@ -191,7 +206,9 @@ Interactive chat interface for testing RAG queries.
 ### Animation Components
 
 #### PageTransition
+
 Wraps pages with smooth fade/slide animations:
+
 ```tsx
 <PageTransition>
   <YourPageContent />
@@ -201,7 +218,9 @@ Wraps pages with smooth fade/slide animations:
 ## 🔌 Services
 
 ### mcpService
+
 Handles all MCP server communication:
+
 - `startServer()`: Start the MCP server
 - `stopServer()`: Stop the MCP server
 - `getStatus()`: Get current server status
@@ -209,14 +228,18 @@ Handles all MCP server communication:
 - `getAvailableTools()`: Fetch MCP tools
 
 ### api
+
 Base API configuration with:
+
 - Automatic error handling
 - Request/response interceptors
 - Base URL configuration
 - TypeScript generics
 
 ### chatService
+
 RAG query interface:
+
 - `sendMessage()`: Send RAG query
 - `streamResponse()`: Stream responses
 - `getSources()`: Get available sources
@@ -224,12 +247,14 @@ RAG query interface:
 ## 🎨 Styling
 
 ### Tailwind Configuration
+
 - Custom color palette
 - Dark mode support
 - Custom animations
 - Responsive breakpoints
 
 ### Theme Variables
+
 ```css
 --primary: Blue accent colors
 --secondary: Gray/neutral colors
@@ -241,6 +266,7 @@ RAG query interface:
 ## 🚀 Development
 
 ### Setup
+
 ```bash
 # Install dependencies
 npm install
@@ -256,12 +282,15 @@ npm test
 ```
 
 ### Environment Variables
+
 ```env
 VITE_API_URL=http://localhost:8080
 ```
 
 ### Hot Module Replacement
+
 Vite provides instant HMR for:
+
 - React components
 - CSS modules
 - TypeScript files
@@ -269,11 +298,13 @@ Vite provides instant HMR for:
 ## 🧪 Testing
 
 ### Unit Tests
+
 - Component testing with React Testing Library
 - Service mocking with MSW
 - Hook testing with @testing-library/react-hooks
 
 ### Integration Tests
+
 - Page-level testing
 - API integration tests
 - WebSocket testing
@@ -281,6 +312,7 @@ Vite provides instant HMR for:
 ## 📦 Build & Deployment
 
 ### Docker Support
+
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -293,6 +325,7 @@ CMD ["npm", "run", "preview"]
 ```
 
 ### Production Optimization
+
 - Code splitting by route
 - Lazy loading for pages
 - Image optimization
@@ -301,16 +334,19 @@ CMD ["npm", "run", "preview"]
 ## 🔧 Configuration Files
 
 ### vite.config.ts
+
 - Path aliases
 - Build optimization
 - Development server config
 
 ### tsconfig.json
+
 - Strict type checking
 - Path mappings
 - Compiler options
 
 ### tailwind.config.js
+
 - Custom theme
 - Plugin configuration
 - Purge settings
@@ -318,12 +354,14 @@ CMD ["npm", "run", "preview"]
 ## 🤝 Contributing
 
 ### Code Style
+
 - ESLint configuration
 - Prettier formatting
 - TypeScript strict mode
 - Component naming conventions
 
 ### Git Workflow
+
 - Feature branches
 - Conventional commits
 - PR templates

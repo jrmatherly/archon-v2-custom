@@ -18,7 +18,7 @@
 /* Smooth collapse animations */
 .prp-viewer .collapsible-content {
   transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.3s ease-out;
+    opacity 0.3s ease-out;
 }
 
 /* Hover effects for cards */
@@ -69,7 +69,8 @@
 
 /* Pulse animation for important metrics */
 @keyframes metricPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -89,7 +90,7 @@
 }
 
 .prp-viewer .flow-connection::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -12px;
   top: 50%;
@@ -105,14 +106,13 @@
 .prp-viewer .interactive-section:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
-              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* Dark mode enhancements */
 .dark .prp-viewer .interactive-section:hover {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5),
-              0 10px 10px -5px rgba(0, 0, 0, 0.2),
-              0 0 20px rgba(59, 130, 246, 0.3);
+    0 10px 10px -5px rgba(0, 0, 0, 0.2), 0 0 20px rgba(59, 130, 246, 0.3);
 }
 
 /* Loading skeleton animation */
@@ -164,11 +164,21 @@
   animation-fill-mode: both;
 }
 
-.prp-viewer .stagger-item:nth-child(1) { animation-delay: 0.1s; }
-.prp-viewer .stagger-item:nth-child(2) { animation-delay: 0.2s; }
-.prp-viewer .stagger-item:nth-child(3) { animation-delay: 0.3s; }
-.prp-viewer .stagger-item:nth-child(4) { animation-delay: 0.4s; }
-.prp-viewer .stagger-item:nth-child(5) { animation-delay: 0.5s; }
+.prp-viewer .stagger-item:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.prp-viewer .stagger-item:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.prp-viewer .stagger-item:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.prp-viewer .stagger-item:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.prp-viewer .stagger-item:nth-child(5) {
+  animation-delay: 0.5s;
+}
 
 @keyframes fadeInUp {
   from {
@@ -183,7 +193,8 @@
 
 /* Floating animation for icons */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -202,7 +213,7 @@
 }
 
 .prp-viewer .glow-border::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: -2px;
@@ -239,7 +250,7 @@
 }
 
 .prp-viewer .metric-success::after {
-  content: '✓';
+  content: "✓";
   position: absolute;
   right: -20px;
   top: 50%;
@@ -267,7 +278,7 @@
 }
 
 .prp-viewer .phase-progress::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 10px;
   top: 0;
@@ -293,11 +304,11 @@
   .prp-viewer .grid {
     grid-template-columns: 1fr;
   }
-  
+
   .prp-viewer .text-3xl {
     font-size: 1.5rem;
   }
-  
+
   .prp-viewer .p-6 {
     padding: 1rem;
   }

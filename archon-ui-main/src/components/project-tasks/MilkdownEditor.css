@@ -9,12 +9,13 @@
   padding: 1.5rem;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* Gradient border effect */
 .milkdown-crepe-editor::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -122,7 +123,7 @@
   border-radius: 8px;
   padding: 1rem;
   overflow-x: auto;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
 }
 
 .dark .milkdown-crepe-editor pre {
@@ -135,7 +136,7 @@
   padding: 0.125rem 0.375rem;
   border-radius: 4px;
   font-size: 0.875rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
 }
 
 .dark .milkdown-crepe-editor code {
@@ -245,7 +246,7 @@
 
 /* Placeholder */
 .milkdown-crepe-editor .ProseMirror.is-empty::before {
-  content: 'Start writing...';
+  content: "Start writing...";
   color: #9ca3af;
   position: absolute;
   pointer-events: none;
@@ -255,7 +256,12 @@
 .milkdown-crepe-editor hr {
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(59, 130, 246, 0.5),
+    transparent
+  );
   margin: 2rem 0;
 }
 
