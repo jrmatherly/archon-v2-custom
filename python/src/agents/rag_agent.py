@@ -66,7 +66,7 @@ class RagAgent(BaseAgent[RagDependencies, str]):
     def __init__(self, model: str = None, **kwargs):
         # Use provided model or fall back to default
         if model is None:
-            model = os.getenv("RAG_AGENT_MODEL", "openai:gpt-4o-mini")
+            model = os.getenv("RAG_AGENT_MODEL", "openai:gpt-4.1-nano")
 
         super().__init__(
             model=model, name="RagAgent", retries=3, enable_rate_limiting=True, **kwargs

@@ -124,7 +124,7 @@ async def lifespan(app: FastAPI):
         try:
             # Pass model configuration from credentials
             model_key = f"{name.upper()}_AGENT_MODEL"
-            model = AGENT_CREDENTIALS.get(model_key, "openai:gpt-4o-mini")
+            model = AGENT_CREDENTIALS.get(model_key, "openai:gpt-4.1-nano")
 
             app.state.agents[name] = agent_class(model=model)
             logger.info(f"Initialized {name} agent with model: {model}")
