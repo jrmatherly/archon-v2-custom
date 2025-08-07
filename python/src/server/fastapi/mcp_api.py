@@ -26,7 +26,7 @@ from ..config.logfire_config import (
     safe_set_attribute,
     safe_span,
 )
-from ..utils import get_supabase_client
+
 
 router = APIRouter(prefix="/api/mcp", tags=["mcp"])
 
@@ -727,8 +727,7 @@ async def save_configuration(config: ServerConfig):
             api_logger.info(
                 f"Saving MCP server configuration | transport={config.transport} | host={config.host} | port={config.port}"
             )
-            supabase_client = get_supabase_client()
-
+            
             config_json = config.model_dump_json()
 
             # Save MCP config using credential service

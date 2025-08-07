@@ -15,7 +15,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 import httpx
-
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
 
@@ -159,15 +158,15 @@ class DocumentAgent(BaseAgent[DocumentDependencies, DocumentOperation]):
 
                 # Get server URL from environment
                 server_url = os.getenv("API_SERVICE_URL", "http://archon-server:8181")
-                
+
                 async with httpx.AsyncClient() as client:
                     response = await client.get(
                         f"{server_url}/api/projects/{ctx.deps.project_id}"
                     )
-                    
+
                     if response.status_code != 200:
                         return f"Failed to fetch project: {response.status_code}"
-                    
+
                     project_data = response.json()
                     docs = project_data.get("docs", [])
                 if not docs:
@@ -193,15 +192,15 @@ class DocumentAgent(BaseAgent[DocumentDependencies, DocumentOperation]):
             try:
                 # Get server URL from environment
                 server_url = os.getenv("API_SERVICE_URL", "http://archon-server:8181")
-                
+
                 async with httpx.AsyncClient() as client:
                     response = await client.get(
                         f"{server_url}/api/projects/{ctx.deps.project_id}"
                     )
-                    
+
                     if response.status_code != 200:
                         return f"Failed to fetch project: {response.status_code}"
-                    
+
                     project_data = response.json()
                     docs = project_data.get("docs", [])
                 matching_docs = [
