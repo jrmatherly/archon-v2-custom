@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
 
 # Copy and install Python dependencies
 COPY requirements.server.txt .
+RUN pip install --upgrade pip
 RUN pip install --user --no-cache-dir -r requirements.server.txt
 
 # Runtime stage

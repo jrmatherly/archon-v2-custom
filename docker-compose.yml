@@ -11,40 +11,49 @@ services:
       args:
         BUILDKIT_INLINE_CACHE: 1
         ARCHON_SERVER_PORT: ${ARCHON_SERVER_PORT:-8181}
-    container_name: Archon-Server
-    command: ["python", "-m", "uvicorn", "src.server.main:socket_app", "--host", "0.0.0.0", "--port", "${ARCHON_SERVER_PORT:-8181}", "--reload"]
+    container_name: archon-server
+    command:
+      [
+        "python",
+        "-m",
+        "uvicorn",
+        "src.server.main:socket_app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "${ARCHON_SERVER_PORT:-8181}",
+        "--reload",
+      ]
     networks:
       - aanai
-      - proxy
     ports:
       - "${ARCHON_SERVER_PORT:-8181}:${ARCHON_SERVER_PORT:-8181}"
     volumes:
-      - ${DOCKER_SOCKET_LOCATION:-/var/run/docker.sock}:/var/run/docker.sock  # Docker socket for MCP container control
-      - ./python/src:/app/src  # Mount source code for hot reload
-      - ./python/tests:/app/tests  # Mount tests for UI test execution
+      - ${DOCKER_SOCKET_LOCATION:-/var/run/docker.sock}:/var/run/docker.sock # Docker socket for MCP container control
+      - ./python/src:/app/src # Mount source code for hot reload
+      - ./python/tests:/app/tests # Mount tests for UI test execution
     environment:
-      - SUPABASE_URL=${ARCHON_SUPABASE_URL}
-      - SUPABASE_SERVICE_KEY=${ARCHON_SUPABASE_SERVICE_KEY}
-      - OPENAI_API_KEY=${ARCHON_OPENAI_API_KEY:-}
-      - OPENAI_BASE_URL=${ARCHON_OPENAI_BASE_URL:-}
-      - LOGFIRE_TOKEN=${ARCHON_LOGFIRE_TOKEN:-}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      - LOGFIRE_TOKEN=${LOGFIRE_TOKEN:-}
       - SERVICE_DISCOVERY_MODE=docker_compose
-      - LOG_LEVEL=${ARCHON_LOG_LEVEL:-INFO}
+      - PROJECTS_ENABLED=true
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - ARCHON_SERVER_PORT=${ARCHON_SERVER_PORT:-8181}
       - ARCHON_MCP_PORT=${ARCHON_MCP_PORT:-8051}
+      - MCP_SERVICE_URL=http://archon-mcp:${ARCHON_MCP_PORT:-8051}
       - ARCHON_AGENTS_PORT=${ARCHON_AGENTS_PORT:-8052}
-    labels:
-      - "traefik.enable=true"
-      # HTTP Routers for ALL API traffic (business logic)
-      - "traefik.http.routers.archon-api-rtr.entrypoints=websecure"
-      - "traefik.http.routers.archon-api-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.archon-api-rtr.middlewares=chain-no-auth@file"
-      - "traefik.http.routers.archon-api-rtr.service=archon-server-svc"
-      # HTTP Services
-      - "traefik.http.services.archon-server-svc.loadbalancer.server.port=8081"
 
     healthcheck:
-      test: ["CMD", "sh", "-c", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${ARCHON_SERVER_PORT:-8181}/health')\""]
+      test:
+        [
+          "CMD",
+          "sh",
+          "-c",
+          'python -c "import urllib.request; urllib.request.urlopen(''http://localhost:${ARCHON_SERVER_PORT:-8181}/health'')"',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -62,45 +71,39 @@ services:
       args:
         BUILDKIT_INLINE_CACHE: 1
         ARCHON_MCP_PORT: ${ARCHON_MCP_PORT:-8051}
-    container_name: Archon-MCP
+    container_name: archon-mcp
     networks:
       - aanai
-      - proxy
-    # ports:
-    #  - "${ARCHON_MCP_PORT:-8051}:${ARCHON_MCP_PORT:-8051}" # Disabled: Traefik handles external port 8051
+    ports:
+      - "${ARCHON_MCP_PORT:-8051}:${ARCHON_MCP_PORT:-8051}" # Disabled: Traefik handles external port 8051
     environment:
-      - SUPABASE_URL=${ARCHON_SUPABASE_URL}
-      - SUPABASE_SERVICE_KEY=${ARCHON_SUPABASE_SERVICE_KEY}
-      - LOGFIRE_TOKEN=${ARCHON_LOGFIRE_TOKEN:-}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - LOGFIRE_TOKEN=${LOGFIRE_TOKEN:-}
       - SERVICE_DISCOVERY_MODE=docker_compose
       - TRANSPORT=sse
-      - LOG_LEVEL=${ARCHON_LOG_LEVEL:-INFO}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
       # MCP needs to know where to find other services
       - API_SERVICE_URL=http://archon-server:${ARCHON_SERVER_PORT:-8181}
       - AGENTS_SERVICE_URL=http://archon-agents:${ARCHON_AGENTS_PORT:-8052}
       - ARCHON_MCP_PORT=${ARCHON_MCP_PORT:-8051}
-    labels:
-      - "traefik.enable=true"
-      # HTTP Routers (using custom MCP entrypoint)
-      - "traefik.http.routers.archon-mcp-rtr.entrypoints=mcpsecure"
-      - "traefik.http.routers.archon-mcp-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`)"
-      # Middlewares
-      # - "traefik.http.routers.archon-mcp-rtr.middlewares=chain-basic-auth@file"
-      - "traefik.http.routers.archon-mcp-rtr.middlewares=chain-no-auth@file"
-      # HTTP Services
-      - "traefik.http.routers.archon-mcp-rtr.service=archon-mcp-svc"
-      - "traefik.http.services.archon-mcp-svc.loadbalancer.server.port=8051"
 
     depends_on:
       - archon-server
       - archon-agents
 
     healthcheck:
-      test: ["CMD", "sh", "-c", "python -c \"import socket; s=socket.socket(); s.connect(('localhost', ${ARCHON_MCP_PORT:-8051})); s.close()\""]
+      test:
+        [
+          "CMD",
+          "sh",
+          "-c",
+          'python -c "import socket; s=socket.socket(); s.connect((''localhost'', ${ARCHON_MCP_PORT:-8051})); s.close()"',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s  # Give dependencies time to start
+      start_period: 60s # Give dependencies time to start
 
   #==================================================#
   #                Archon Agents                     #
@@ -114,23 +117,30 @@ services:
       args:
         BUILDKIT_INLINE_CACHE: 1
         ARCHON_AGENTS_PORT: ${ARCHON_AGENTS_PORT:-8052}
-    container_name: Archon-Agents
+    container_name: archon-agents
     networks:
       - aanai
     ports:
       - "${ARCHON_AGENTS_PORT:-8052}:${ARCHON_AGENTS_PORT:-8052}"
     environment:
-      - SUPABASE_URL=${ARCHON_SUPABASE_URL}
-      - SUPABASE_SERVICE_KEY=${ARCHON_SUPABASE_SERVICE_KEY}
-      - OPENAI_API_KEY=${ARCHON_OPENAI_API_KEY:-}
-      - OPENAI_BASE_URL=${ARCHON_OPENAI_BASE_URL:-}
-      - LOGFIRE_TOKEN=${ARCHON_LOGFIRE_TOKEN:-}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
+      - LOGFIRE_TOKEN=${LOGFIRE_TOKEN:-}
       - SERVICE_DISCOVERY_MODE=docker_compose
       - LOG_LEVEL=${ARCHON_LOG_LEVEL:-INFO}
+      - ARCHON_SERVER_PORT=${ARCHON_SERVER_PORT:-8181}
       - ARCHON_AGENTS_PORT=${ARCHON_AGENTS_PORT:-8052}
 
     healthcheck:
-      test: ["CMD", "sh", "-c", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:${ARCHON_AGENTS_PORT:-8052}/health')\""]
+      test:
+        [
+          "CMD",
+          "sh",
+          "-c",
+          'python -c "import urllib.request; urllib.request.urlopen(''http://localhost:${ARCHON_AGENTS_PORT:-8052}/health'')"',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -143,30 +153,18 @@ services:
   # Frontend
   frontend:
     build: ./archon-ui-main
-    container_name: Archon-UI
+    container_name: archon-ui
     ports:
       - "${ARCHON_UI_PORT:-3737}:5173"
     environment:
-      - VITE_API_URL=http://${ARCHON_HOST:-localhost}:${ARCHON_SERVER_PORT:-8181}
+      - VITE_API_URL=http://${HOST:-localhost}:${ARCHON_SERVER_PORT:-8181}
       - ARCHON_SERVER_PORT=${ARCHON_SERVER_PORT:-8181}
-      - HOST=${ARCHON_HOST:-localhost}
+      - HOST=${HOST:-localhost}
     networks:
       - aanai
-      - proxy
     volumes:
       - ./archon-ui-main/src:/app/src
       - ./archon-ui-main/public:/app/public
-    labels:
-      - "traefik.enable=true"
-      # HTTP Routers
-      - "traefik.http.routers.archon-rtr.entrypoints=websecure"
-      - "traefik.http.routers.archon-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`) && !PathPrefix(`/api`)"
-      # Middlewares
-      #- "traefik.http.routers.archon-rtr.middlewares=chain-basic-auth@file"
-      - "traefik.http.routers.archon-rtr.middlewares=chain-no-auth@file"
-      # HTTP Services
-      - "traefik.http.routers.archon-rtr.service=archon-svc"
-      - "traefik.http.services.archon-svc.loadbalancer.server.port=5173"
 
     depends_on:
       - archon-server
@@ -177,6 +175,19 @@ services:
       timeout: 10s
       retries: 3
 
+  #==================================================#
+  #                Archon Documentation              #
+  #==================================================#
+  # Documentation
+  docs:
+    build:
+      context: ./docs
+      dockerfile: Dockerfile
+    container_name: archon-docs
+    networks:
+      - aanai
+    ports:
+      - "${ARCHON_DOCS_PORT:-3838}:80"
 # networks:
 #   aanai:
 #     driver: bridge
