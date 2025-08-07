@@ -183,10 +183,12 @@ services:
     ports:
       - "${ARCHON_UI_PORT:-3737}:5173"
     environment:
-      - VITE_API_URL=http://${HOST:-localhost}:${ARCHON_SERVER_PORT:-8181}
-      - VITE_MCP_URL=http://${HOST:-localhost}:${ARCHON_MCP_PORT:-8051}/mcp
+      # Environment-specific URLs (set these in your .env file)
+      - VITE_API_URL=${VITE_API_URL:-http://${HOST:-localhost}:${ARCHON_SERVER_PORT:-8181}}
+      - VITE_MCP_URL=${VITE_MCP_URL:-http://${HOST:-localhost}:${ARCHON_MCP_PORT:-8051}/mcp}
       - ARCHON_SERVER_PORT=${ARCHON_SERVER_PORT:-8181}
       - HOST=${HOST:-localhost}
+      - DOMAIN_NAME=${DOMAIN_NAME:-}
     networks:
       - aanai
       - proxy

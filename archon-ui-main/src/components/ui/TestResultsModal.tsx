@@ -47,14 +47,19 @@ export function TestResultsModal({ isOpen, onClose }: TestResultsModalProps) {
     console.log('[TEST RESULTS MODAL] Fetching test results...')
     
     // Add retry logic for file reading
-    const fetchWithRetry = async (url: string, retries = 3): Promise<Response | null> => {
+    const fetchWithRetry = async (url: string, retries = 3): Promise<any | null> => {
       for (let i = 0; i < retries; i++) {
         try {
           const response = await fetch(url)
           if (response.ok) {
             const text = await response.text()
             if (text && text.trim().length > 0) {
-              return response
+              try {
+                return JSON.parse(text)
+              } catch (parseError) {
+                console.error(`[TEST RESULTS MODAL] JSON parse error for ${url}:`, parseError)
+                return null
+              }
             }
           }
           // Wait a bit before retrying
@@ -70,12 +75,11 @@ export function TestResultsModal({ isOpen, onClose }: TestResultsModalProps) {
     
     try {
       // Fetch test results JSON with retry
-      const testResponse = await fetchWithRetry('/test-results/test-results.json')
-      console.log('[TEST RESULTS MODAL] Test results response:', testResponse?.status, testResponse?.statusText)
+      const testData = await fetchWithRetry('/test-results/test-results.json')
+      console.log('[TEST RESULTS MODAL] Test results data:', testData)
       
-      if (testResponse && testResponse.ok) {
+      if (testData) {
         try {
-          const testData = await testResponse.json()
           console.log('[TEST RESULTS MODAL] Test data loaded:', testData)
         
           // Parse vitest results format - handle both full format and simplified format
@@ -123,12 +127,11 @@ export function TestResultsModal({ isOpen, onClose }: TestResultsModalProps) {
       }
 
       // Fetch coverage data with retry
-      const coverageResponse = await fetchWithRetry('/test-results/coverage/coverage-summary.json')
-      console.log('[TEST RESULTS MODAL] Coverage response:', coverageResponse?.status, coverageResponse?.statusText)
+      const coverageData = await fetchWithRetry('/test-results/coverage/coverage-summary.json')
+      console.log('[TEST RESULTS MODAL] Coverage data:', coverageData)
       
-      if (coverageResponse && coverageResponse.ok) {
+      if (coverageData) {
         try {
-          const coverageData = await coverageResponse.json()
           console.log('[TEST RESULTS MODAL] Coverage data loaded:', coverageData)
           setCoverage(coverageData)
         } catch (parseError) {
@@ -136,7 +139,7 @@ export function TestResultsModal({ isOpen, onClose }: TestResultsModalProps) {
         }
       }
 
-      if (!testResponse && !coverageResponse) {
+      if (!testData && !coverageData) {
         console.log('[TEST RESULTS MODAL] No data available - both requests failed')
         throw new Error('No test results or coverage data available. Please run tests first.')
       }

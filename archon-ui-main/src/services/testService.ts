@@ -147,7 +147,7 @@ class TestService {
     onError?: (error: Error) => void,
     onComplete?: () => void
   ): Promise<string> {
-    return this.runTestsWithEndpoint('/api/run-tests-with-coverage', onMessage, onError, onComplete);
+    return this.runTestsWithEndpoint('/api/tests/ui/run', onMessage, onError, onComplete);
   }
 
   /**
@@ -171,12 +171,16 @@ class TestService {
         timestamp: new Date().toISOString()
       });
 
-      // Call the Vite dev server endpoint to run real vitest tests
+      // Call the backend API endpoint to run tests
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify({
+          test_type: 'ui',
+          options: {}
+        })
       });
 
       if (!response.ok) {
