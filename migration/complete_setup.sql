@@ -174,6 +174,13 @@ VALUES (
         false,
         'features',
         'Enable or disable Projects and Tasks functionality'
+    ),
+    (
+        'DISCONNECT_SCREEN_ENABLED',
+        'true',
+        false,
+        'ui_features',
+        'Controls whether to show disconnect screen when server is unavailable'
     );
 
 -- Placeholder for sensitive credentials (to be added via Settings UI)
