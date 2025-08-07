@@ -14,10 +14,11 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
+import httpx
+
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
 
-from ..server.services.client_manager import get_supabase_client
 from .base_agent import ArchonDependencies, BaseAgent
 from .mcp_client import get_mcp_client
 
@@ -156,18 +157,19 @@ class DocumentAgent(BaseAgent[DocumentDependencies, DocumentOperation]):
                 if not ctx.deps.project_id:
                     return "No project is currently selected. Please specify a project or create one first to manage documents."
 
-                supabase = get_supabase_client()
-                response = (
-                    supabase.table("projects")
-                    .select("docs")
-                    .eq("id", ctx.deps.project_id)
-                    .execute()
-                )
-
-                if not response.data:
-                    return "No project found with the given ID."
-
-                docs = response.data[0].get("docs", [])
+                # Get server URL from environment
+                server_url = os.getenv("API_SERVICE_URL", "http://archon-server:8181")
+                
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(
+                        f"{server_url}/api/projects/{ctx.deps.project_id}"
+                    )
+                    
+                    if response.status_code != 200:
+                        return f"Failed to fetch project: {response.status_code}"
+                    
+                    project_data = response.json()
+                    docs = project_data.get("docs", [])
                 if not docs:
                     return "No documents found in this project."
 
@@ -189,18 +191,19 @@ class DocumentAgent(BaseAgent[DocumentDependencies, DocumentOperation]):
         ) -> str:
             """Get the content of a specific document by title."""
             try:
-                supabase = get_supabase_client()
-                response = (
-                    supabase.table("projects")
-                    .select("docs")
-                    .eq("id", ctx.deps.project_id)
-                    .execute()
-                )
-
-                if not response.data:
-                    return "No project found."
-
-                docs = response.data[0].get("docs", [])
+                # Get server URL from environment
+                server_url = os.getenv("API_SERVICE_URL", "http://archon-server:8181")
+                
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(
+                        f"{server_url}/api/projects/{ctx.deps.project_id}"
+                    )
+                    
+                    if response.status_code != 200:
+                        return f"Failed to fetch project: {response.status_code}"
+                    
+                    project_data = response.json()
+                    docs = project_data.get("docs", [])
                 matching_docs = [
                     doc
                     for doc in docs
