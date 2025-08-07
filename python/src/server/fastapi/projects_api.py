@@ -18,9 +18,6 @@ from pydantic import BaseModel
 # Removed direct logging import - using unified config
 # Set up standard logger for background tasks
 from ..config.logfire_config import get_logger, logfire
-from ..utils import get_supabase_client
-
-logger = get_logger(__name__)
 
 # Service imports
 from ..services.projects import (
@@ -32,9 +29,12 @@ from ..services.projects import (
 )
 from ..services.projects.document_service import DocumentService
 from ..services.projects.versioning_service import VersioningService
+from ..utils import get_supabase_client
 
 # Import Socket.IO broadcast functions from socketio_handlers
 from .socketio_handlers import broadcast_project_update
+
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/api", tags=["projects"])
 

@@ -9,9 +9,9 @@ from typing import Any, Dict, List, Optional
 from supabase import Client
 
 from ...config.logfire_config import get_logger, safe_span
+from ..embeddings.embedding_service import create_embedding, create_embedding_async
 
 logger = get_logger(__name__)
-from ..embeddings.embedding_service import create_embedding, create_embedding_async
 
 # Fixed similarity threshold for RAG queries
 # Could make this configurable in the future, but that is unnecessary for now

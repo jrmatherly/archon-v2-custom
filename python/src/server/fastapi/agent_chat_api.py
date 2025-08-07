@@ -15,10 +15,10 @@ import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-logger = logging.getLogger(__name__)
-
 # Import Socket.IO instance
 from ..socketio_app import get_socketio_instance
+
+logger = logging.getLogger(__name__)
 
 sio = get_socketio_instance()
 

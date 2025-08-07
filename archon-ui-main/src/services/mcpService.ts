@@ -161,16 +161,38 @@ class MCPService {
 		return response.json();
 	}
 
+	/**
+	 * Get environment-aware default configuration
+	 */
+	private getDefaultConfig(): ServerConfig {
+		// Use environment variable if available
+		if (import.meta.env.VITE_MCP_URL) {
+			try {
+				const url = new URL(import.meta.env.VITE_MCP_URL);
+				return {
+					transport: "http",
+					host: url.hostname,
+					port: parseInt(url.port) || 8051,
+				};
+			} catch (error) {
+				console.warn('Invalid VITE_MCP_URL format, using fallback config:', error);
+			}
+		}
+		
+		// Development fallback
+		return {
+			transport: "http",
+			host: "localhost",
+			port: 8051,
+		};
+	}
+
 	async getConfiguration(): Promise<ServerConfig> {
 		const response = await fetch(`${this.baseUrl}/api/mcp/config`);
 
 		if (!response.ok) {
-			// Return default config if endpoint doesn't exist yet
-			return {
-				transport: "sse",
-				host: "localhost",
-				port: 8051,
-			};
+			// Return environment-aware default config
+			return this.getDefaultConfig();
 		}
 
 		return response.json();

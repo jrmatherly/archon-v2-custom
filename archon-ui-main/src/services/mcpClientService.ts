@@ -440,6 +440,24 @@ class MCPClientService {
 	// ========================================
 
 	/**
+	 * Get MCP URL based on environment configuration
+	 */
+	private getMcpUrl(): string {
+		// Production/Docker environment - use environment variable if set
+		if (import.meta.env.VITE_MCP_URL) {
+			return import.meta.env.VITE_MCP_URL;
+		}
+		
+		// Development environment - direct connection
+		if (import.meta.env.DEV) {
+			return "http://localhost:8051/mcp";
+		}
+		
+		// Fallback to relative path for Traefik routing
+		return "/mcp";
+	}
+
+	/**
 	 * Create Archon MCP client using Streamable HTTP transport
 	 */
 	async createArchonClient(): Promise<MCPClient> {
@@ -447,7 +465,7 @@ class MCPClientService {
 			name: "Archon",
 			transport_type: "http",
 			connection_config: {
-				url: import.meta.env.VITE_MCP_URL || "/mcp",
+				url: this.getMcpUrl(),
 			},
 			auto_connect: true,
 			health_check_interval: 30,

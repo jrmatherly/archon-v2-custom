@@ -252,6 +252,22 @@ class MCPServerService {
   // ========================================
 
   /**
+   * Build MCP URL based on transport type and environment configuration
+   */
+  private buildMcpUrl(config: any): string {
+    if (config.transport === "http") {
+      // For HTTP transport, use environment variable if available
+      if (import.meta.env.VITE_MCP_URL) {
+        return import.meta.env.VITE_MCP_URL;
+      }
+      return `http://${config.host}:${config.port}/mcp`;
+    } else {
+      // For SSE transport, use the original format
+      return `http://${config.host}:${config.port}/${config.transport}`;
+    }
+  }
+
+  /**
    * Make an MCP call to the running Archon server via SSE
    */
   private async makeMCPCall(method: string, params?: any): Promise<any> {
@@ -261,7 +277,7 @@ class MCPServerService {
     }
 
     const config = await this.getConfiguration();
-    const mcpUrl = `http://${config.host}:${config.port}/${config.transport}`;
+    const mcpUrl = this.buildMcpUrl(config);
     
     // Generate unique request ID
     const id = Math.random().toString(36).substring(2);
