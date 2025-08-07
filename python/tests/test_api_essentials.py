@@ -26,15 +26,15 @@ def test_create_project(client, test_project, mock_supabase_client):
     ]
 
     response = client.post("/api/projects", json=test_project)
-    # Should succeed with mocked data
-    assert response.status_code in [200, 201]
+    # Should succeed - project creation returns 200
+    assert response.status_code == 200
 
     data = response.json()
-    # Verify no real database call was made
-    assert mock_supabase_client.table.called
-
-    # Check response format
-    assert "title" in data or "id" in data or "progress_id" in data or "status" in data
+    # The API returns progress_id and status for async project creation
+    assert "progress_id" in data
+    assert "status" in data
+    assert data["status"] == "started"
+    assert "message" in data
 
 
 def test_list_projects(client, mock_supabase_client):
@@ -44,9 +44,11 @@ def test_list_projects(client, mock_supabase_client):
 
     response = client.get("/api/projects")
     assert response.status_code == 200
-    # Response should be JSON (list or dict)
+    # Response should be a list of projects (empty list when no projects)
     data = response.json()
-    assert isinstance(data, (list, dict))
+    assert isinstance(data, list)
+    # With empty mock data, should return empty list
+    assert len(data) == 0
 
     # Verify mock was called
     assert mock_supabase_client.table.called
