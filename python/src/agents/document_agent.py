@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
 
+from ..server.services.client_manager import get_supabase_client
 from .base_agent import ArchonDependencies, BaseAgent
 from .mcp_client import get_mcp_client
 
@@ -84,7 +85,7 @@ class DocumentAgent(BaseAgent[DocumentDependencies, DocumentOperation]):
         agent = Agent(
             model=self.model,
             deps_type=DocumentDependencies,
-            result_type=DocumentOperation,
+            output_type=DocumentOperation,
             system_prompt="""You are a Document Management Assistant that helps users create, update, and modify project documents through conversation.
 
 **Your Capabilities:**
