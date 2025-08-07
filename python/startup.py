@@ -4,12 +4,14 @@ Startup script for MCP Crawl4AI RAG UI application.
 Sets up the environment and guides through initial configuration.
 """
 
-import os
-import sys
-import subprocess
 import asyncio
+import os
+import subprocess
+import sys
 from pathlib import Path
+
 from src.server.services.credential_service import credential_service
+
 
 def print_header():
     """Print startup header."""
@@ -18,33 +20,36 @@ def print_header():
     print("=" * 60)
     print()
 
+
 def check_env_file():
     """Check if .env file exists and has required Supabase configuration."""
     env_file = Path(".env")
-    
+
     if not env_file.exists():
         print("❌ .env file not found!")
         print("📝 Please create a .env file based on .env-doc.md")
         print("   You only need to set SUPABASE_URL and SUPABASE_SERVICE_KEY")
         print()
         return False
-    
+
     # Check if required variables are set
     from dotenv import load_dotenv
+
     load_dotenv()
-    
+
     supabase_url = os.getenv("SUPABASE_URL")
     supabase_key = os.getenv("SUPABASE_SERVICE_KEY")
-    
+
     if not supabase_url or not supabase_key:
         print("❌ Missing required Supabase configuration in .env!")
         print("   Required: SUPABASE_URL and SUPABASE_SERVICE_KEY")
         print("   See .env-doc.md for instructions")
         print()
         return False
-    
+
     print("✅ Environment file configured correctly")
     return True
+
 
 async def check_database_setup():
     """Check if the settings table exists in Supabase."""
@@ -60,6 +65,7 @@ async def check_database_setup():
         print()
         return False
 
+
 def install_dependencies():
     """Install Python dependencies."""
     print("📦 Installing Python dependencies...")
@@ -68,7 +74,7 @@ def install_dependencies():
             ["uv", "pip", "install", "--system", "-e", ".[api]"],
             check=True,
             capture_output=True,
-            text=True
+            text=True,
         )
         print("✅ Python dependencies installed")
         return True
@@ -81,15 +87,16 @@ def install_dependencies():
         print("   Please install uv: https://docs.astral.sh/uv/")
         return False
 
+
 def setup_frontend():
     """Setup React frontend dependencies."""
     print("🎨 Setting up React frontend...")
     frontend_path = Path("archon-ui-main")
-    
+
     if not frontend_path.exists():
         print("❌ Frontend directory not found!")
         return False
-    
+
     try:
         # Change to frontend directory and install dependencies
         result = subprocess.run(
@@ -97,7 +104,7 @@ def setup_frontend():
             cwd=frontend_path,
             check=True,
             capture_output=True,
-            text=True
+            text=True,
         )
         print("✅ Frontend dependencies installed")
         return True
@@ -109,6 +116,7 @@ def setup_frontend():
         print("   Please install Node.js: https://nodejs.org/")
         return False
 
+
 def run_setup_sql():
     """Guide user through SQL setup."""
     print()
@@ -119,6 +127,7 @@ def run_setup_sql():
     print("   4. This will create the settings table with default settings")
     print()
     input("Press Enter when you've completed the SQL setup...")
+
 
 async def start_services():
     """Start the backend and frontend services."""
@@ -132,35 +141,39 @@ async def start_services():
     print("   - Configure model choices")
     print("   - Enable RAG strategies")
     print()
-    
+
     try:
         # Start using docker-compose
         print("🐳 Starting with Docker Compose...")
-        result = subprocess.run(
-            ["docker-compose", "up", "--build"],
-            check=True
-        )
+        result = subprocess.run(["docker-compose", "up", "--build"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to start with Docker: {e}")
         print("   Trying manual startup...")
-        
+
         # Manual startup fallback
         print("🔧 Starting backend API server...")
-        backend_process = subprocess.Popen([
-            "python", "-m", "uvicorn", "src.main:app", 
-            "--host", "0.0.0.0", "--port", "8080", "--reload"
-        ])
-        
+        backend_process = subprocess.Popen(
+            [
+                "python",
+                "-m",
+                "uvicorn",
+                "src.main:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8080",
+                "--reload",
+            ]
+        )
+
         print("🎨 Starting frontend development server...")
-        frontend_process = subprocess.Popen([
-            "npm", "run", "dev"
-        ], cwd="archon-ui-main")
-        
+        frontend_process = subprocess.Popen(["npm", "run", "dev"], cwd="archon-ui-main")
+
         print("✅ Services started!")
         print("   Backend: http://localhost:8080")
         print("   Frontend: http://localhost:3737")
         print("   Press Ctrl+C to stop")
-        
+
         try:
             # Wait for processes
             backend_process.wait()
@@ -169,33 +182,37 @@ async def start_services():
             backend_process.terminate()
             frontend_process.terminate()
 
+
 async def main():
     """Main startup routine."""
     print_header()
-    
+
     # Step 1: Check environment file
     if not check_env_file():
         sys.exit(1)
-    
+
     # Step 2: Install dependencies
     if not install_dependencies():
         sys.exit(1)
-    
+
     # Step 3: Setup frontend
     if not setup_frontend():
         sys.exit(1)
-    
+
     # Step 4: Check database setup
     if not await check_database_setup():
         run_setup_sql()
-        
+
         # Re-check after user setup
         if not await check_database_setup():
-            print("❌ Database setup still incomplete. Please check your SQL execution.")
+            print(
+                "❌ Database setup still incomplete. Please check your SQL execution."
+            )
             sys.exit(1)
-    
+
     # Step 5: Start services
     await start_services()
+
 
 if __name__ == "__main__":
     try:
@@ -205,4 +222,4 @@ if __name__ == "__main__":
         sys.exit(0)
     except Exception as e:
         print(f"\n❌ Startup failed: {e}")
-        sys.exit(1) 
+        sys.exit(1)

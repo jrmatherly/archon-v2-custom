@@ -31,7 +31,7 @@ Archon UI provides a comprehensive dashboard for managing your AI's knowledge ba
 
 ### Project Structure
 
-```
+```sourceTree
 archon-ui-main/
 ├── src/
 │   ├── components/          # Reusable UI components

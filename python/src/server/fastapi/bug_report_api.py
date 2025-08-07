@@ -5,8 +5,9 @@ Handles bug report submission to GitHub Issues with automatic context formatting
 """
 
 import os
+from typing import Any, Dict, Optional
+
 import httpx
-from typing import Dict, Any, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -53,7 +54,8 @@ class GitHubService:
 
         if not self.token:
             raise HTTPException(
-                status_code=500, detail="GitHub integration not configured - GITHUB_TOKEN not found"
+                status_code=500,
+                detail="GitHub integration not configured - GITHUB_TOKEN not found",
             )
 
         # Format the issue body
@@ -96,9 +98,12 @@ class GitHubService:
                         detail="GitHub authentication failed - check GITHUB_TOKEN permissions",
                     )
                 else:
-                    logger.error(f"GitHub API error: {response.status_code} - {response.text}")
+                    logger.error(
+                        f"GitHub API error: {response.status_code} - {response.text}"
+                    )
                     raise HTTPException(
-                        status_code=500, detail=f"GitHub API error: {response.status_code}"
+                        status_code=500,
+                        detail=f"GitHub API error: {response.status_code}",
                     )
 
         except httpx.TimeoutException:
@@ -106,7 +111,9 @@ class GitHubService:
             raise HTTPException(status_code=500, detail="GitHub API request timed out")
         except Exception as e:
             logger.error(f"Unexpected error creating GitHub issue: {e}")
-            raise HTTPException(status_code=500, detail=f"Failed to create GitHub issue: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to create GitHub issue: {str(e)}"
+            )
 
     def _format_issue_body(self, bug_report: BugReportRequest) -> str:
         """Format the bug report as a GitHub issue body."""
@@ -232,7 +239,9 @@ async def create_github_issue(bug_report: BugReportRequest):
         return _create_manual_submission_response(bug_report)
 
 
-def _create_manual_submission_response(bug_report: BugReportRequest) -> BugReportResponse:
+def _create_manual_submission_response(
+    bug_report: BugReportRequest,
+) -> BugReportResponse:
     """Create a response with pre-filled GitHub issue URL for manual submission."""
 
     # Format the issue body for URL encoding
@@ -275,5 +284,7 @@ async def bug_report_health():
         "github_token_configured": github_configured,
         "github_repo_configured": repo_configured,
         "repo": os.getenv("GITHUB_REPO", "dynamous-community/Archon-V2-Alpha"),
-        "message": "Bug reporting is ready" if github_configured else "GitHub token not configured",
+        "message": "Bug reporting is ready"
+        if github_configured
+        else "GitHub token not configured",
     }

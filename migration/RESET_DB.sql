@@ -1,19 +1,19 @@
 -- ======================================================================
 -- ARCHON DATABASE RESET SCRIPT
 -- ======================================================================
--- 
+--
 -- This script safely resets the entire Archon database by dropping all
 -- tables, types, functions, triggers, and policies with conditional checks
 -- and cascading drops to maintain referential integrity.
 --
 -- ⚠️  WARNING: THIS WILL DELETE ALL DATA! ⚠️
--- 
+--
 -- Usage:
 --   1. Connect to your Supabase/PostgreSQL database
 --   2. Run this script in the SQL editor
 --   3. Run the migration files in order to recreate the schema:
 --      - 1_initial_setup.sql
---      - 2_archon_projects.sql  
+--      - 2_archon_projects.sql
 --      - 3_mcp_client_management.sql (optional)
 --
 -- Created: 2024-01-01
@@ -288,4 +288,4 @@ COMMIT;
 
 -- ======================================================================
 -- END OF RESET SCRIPT
--- ====================================================================== 
+-- ======================================================================

@@ -5,6 +5,7 @@ This directory contains testing tools for the Archon PRP Viewer to ensure consis
 ## PRP Viewer Test Tool
 
 ### Purpose
+
 The `prp_viewer_test.py` script identifies rendering inconsistencies between different document views in the Archon UI. It helps diagnose issues like:
 
 - Missing sections in one view but not the other
@@ -16,6 +17,7 @@ The `prp_viewer_test.py` script identifies rendering inconsistencies between dif
 ### Prerequisites
 
 1. **Environment Setup**
+
    ```bash
    # Ensure you have the required environment variables
    cp .env.example .env
@@ -25,6 +27,7 @@ The `prp_viewer_test.py` script identifies rendering inconsistencies between dif
    ```
 
 2. **Start Archon UI Server**
+
    ```bash
    cd archon-ui-main
    npm run dev
@@ -39,6 +42,7 @@ The `prp_viewer_test.py` script identifies rendering inconsistencies between dif
 There are two ways to run the test:
 
 #### Option 1: From Host Machine (Recommended)
+
 ```bash
 # From the project root directory
 python run_prp_viewer_test.py <PROJECT_UUID>
@@ -48,6 +52,7 @@ python run_prp_viewer_test.py b4cebbce-6a2c-48c8-9583-050ddf3fb9e3
 ```
 
 #### Option 2: From Inside Docker Container
+
 ```bash
 # Run from inside the Archon-Server container
 source .env && docker exec -e SUPABASE_URL="$SUPABASE_URL" -e SUPABASE_SERVICE_KEY="$SUPABASE_SERVICE_KEY" -e ARCHON_UI_PORT="$ARCHON_UI_PORT" Archon-Server python /app/src/server/testing/prp_viewer_test.py --project-id <PROJECT_UUID>
