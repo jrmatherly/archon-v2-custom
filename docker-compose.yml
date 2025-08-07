@@ -49,13 +49,16 @@ services:
     labels:
       - "traefik.enable=true"
       # HTTP Routers
-      - "traefik.http.routers.archon-api-rtr.entrypoints=websecure"
-      - "traefik.http.routers.archon-api-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.archon-server-rtr.entrypoints=websecure"
+      - "traefik.http.routers.archon-server-rtr.rule=Host(`aanai-archon.${DOMAIN_NAME}`) && PathPrefix(`/api`)"
       # Middlewares
-      - "traefik.http.routers.archon-api-rtr.middlewares=chain-no-auth@file"
+      - "traefik.http.routers.archon-server-rtr.middlewares=chain-no-auth@file"
       # HTTP Services
-      - "traefik.http.routers.archon-api-rtr.service=archon-server-svc"
+      - "traefik.http.routers.archon-server-rtr.service=archon-server-svc"
       - "traefik.http.services.archon-server-svc.loadbalancer.server.port=${ARCHON_SERVER_PORT:-8181}"
+      # WebSocket Support for Socket.IO health monitoring
+      - "traefik.http.services.archon-server-svc.loadbalancer.server.scheme=http"
+      - "traefik.http.services.archon-server-svc.loadbalancer.passhostheader=true"
 
     healthcheck:
       test:

@@ -17,6 +17,23 @@ sio = get_socketio_instance()
 
 
 # Core broadcast functions
+async def broadcast_health_status(status: str, message: str = None):
+    """Broadcast server health status to all connected clients."""
+    try:
+        health_data = {
+            "type": "health_status",
+            "status": status,
+            "message": message,
+            "timestamp": asyncio.get_event_loop().time(),
+        }
+
+        # Broadcast to all connected clients
+        await sio.emit("health_status", health_data)
+        logger.info(f"Broadcasted health status: {status} to all clients")
+    except Exception as e:
+        logger.error(f"Failed to broadcast health status: {e}")
+
+
 async def broadcast_task_update(project_id: str, event_type: str, task_data: dict):
     """Broadcast task updates to project room."""
     # Get room members for debugging

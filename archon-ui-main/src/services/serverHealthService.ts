@@ -10,12 +10,14 @@ class ServerHealthService {
   private isConnected: boolean = true;
   private missedChecks: number = 0;
   private callbacks: HealthCheckCallback | null = null;
+  private socket: any = null;
+  private fallbackHealthCheckEnabled: boolean = false;
 
   // Settings
   private disconnectScreenEnabled: boolean = true;
   private disconnectScreenDelay: number = 10000; // 10 seconds
-  private maxMissedChecks: number = 2; // Show disconnect after 2 missed checks (10 seconds max)
-  private checkInterval: number = 5000; // Check every 5 seconds (reduced frequency for heavy operations)
+  private maxMissedChecks: number = 3; // Show disconnect after 3 missed checks
+  private checkInterval: number = 30000; // Fallback check every 30 seconds (much less frequent)
 
   async loadSettings() {
     try {
@@ -31,12 +33,8 @@ class ServerHealthService {
    * Get the proper health check URL to avoid Traefik routing conflicts
    */
   private getHealthUrl(): string {
-    // In production (Traefik), use absolute URL to ensure proper routing
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      return `${window.location.protocol}//${window.location.host}/api/health`;
-    }
-    
-    // In development, use relative URL
+    // Always use relative URL with proper /api prefix to ensure consistent routing
+    // This works in both development and production with Traefik
     return '/api/health';
   }
 
@@ -106,39 +104,107 @@ class ServerHealthService {
     // Load settings first
     this.loadSettings();
 
-    // Start HTTP health polling
+    // Try to establish WebSocket-based health monitoring first
+    this.setupWebSocketHealthMonitoring();
+    
+    // Fallback to reduced-frequency polling only if WebSocket fails
+    this.startFallbackHealthChecks();
+  }
+
+  /**
+   * Setup WebSocket-based health monitoring (scalable approach)
+   */
+  private setupWebSocketHealthMonitoring() {
+    try {
+      // Import socket.io-client dynamically to avoid bundle bloat if not needed
+      import('socket.io-client').then(({ io }) => {
+        this.socket = io();
+        
+        // Listen for server health status broadcasts
+        this.socket.on('health_status', (data: any) => {
+          console.log('🏥 [Health] Received WebSocket health status:', data);
+          
+          if (data.status === 'healthy' || data.status === 'online') {
+            if (!this.isConnected) {
+              // Server recovered
+              this.handleConnectionRestored();
+            }
+            this.isConnected = true;
+            this.missedChecks = 0;
+          } else if (data.status === 'unhealthy' || data.status === 'offline') {
+            this.handleConnectionLost();
+          }
+        });
+        
+        // Handle WebSocket connection events
+        this.socket.on('connect', () => {
+          console.log('🏥 [Health] WebSocket health monitoring connected');
+          this.fallbackHealthCheckEnabled = false; // Disable fallback polling
+        });
+        
+        this.socket.on('disconnect', () => {
+          console.log('🏥 [Health] WebSocket health monitoring disconnected, enabling fallback');
+          this.fallbackHealthCheckEnabled = true; // Enable fallback polling
+        });
+        
+      }).catch(error => {
+        console.warn('🏥 [Health] Socket.IO not available, using fallback polling:', error);
+        this.fallbackHealthCheckEnabled = true;
+      });
+    } catch (error) {
+      console.warn('🏥 [Health] WebSocket setup failed, using fallback polling:', error);
+      this.fallbackHealthCheckEnabled = true;
+    }
+  }
+
+  /**
+   * Fallback health checks with much reduced frequency (scalable)
+   */
+  private startFallbackHealthChecks() {
+    // Start very infrequent fallback health checks (only when WebSocket is unavailable)
     this.healthCheckInterval = window.setInterval(async () => {
+      // Only run fallback checks if WebSocket monitoring is not available
+      if (!this.fallbackHealthCheckEnabled) {
+        return;
+      }
+      
+      console.log('🏥 [Health] Running fallback health check...');
       const isHealthy = await this.checkHealth();
       
       if (isHealthy) {
-        // Server is healthy
         if (this.missedChecks > 0) {
-          // Was disconnected, now reconnected
           this.missedChecks = 0;
           this.handleConnectionRestored();
         }
       } else {
-        // Server is not responding
         this.missedChecks++;
-        // Health check failed
-        
-        // After maxMissedChecks failures, trigger disconnect screen
         if (this.missedChecks >= this.maxMissedChecks && this.isConnected) {
-          this.isConnected = false;
-          if (this.disconnectScreenEnabled && this.callbacks) {
-            // Triggering disconnect screen after multiple health check failures
-            this.callbacks.onDisconnected();
-          }
+          this.handleConnectionLost();
         }
       }
     }, this.checkInterval);
 
-    // Do an immediate check
-    this.checkHealth().then(isHealthy => {
-      if (!isHealthy) {
-        this.missedChecks = 1;
+    // Do an immediate check only if WebSocket is not available
+    setTimeout(() => {
+      if (this.fallbackHealthCheckEnabled) {
+        this.checkHealth().then(isHealthy => {
+          if (!isHealthy) {
+            this.missedChecks = 1;
+          }
+        });
       }
-    });
+    }, 1000);
+  }
+
+  /**
+   * Handle connection lost
+   */
+  private handleConnectionLost() {
+    this.isConnected = false;
+    if (this.disconnectScreenEnabled && this.callbacks) {
+      console.log('🏥 [Health] Triggering disconnect screen');
+      this.callbacks.onDisconnected();
+    }
   }
 
   private handleConnectionRestored() {

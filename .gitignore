@@ -9,3 +9,6 @@ security-report.md
 # Local configuration files should not be committed
 CLAUDE.md
 PROJECT_ANALYSIS_NOTES.md
+
+# Traefik Example
+/traefik-example

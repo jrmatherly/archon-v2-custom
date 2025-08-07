@@ -39,10 +39,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       
       try {
         // Check if backend is responding with a simple health check
-        const response = await fetch(`${credentialsService['baseUrl']}/health`, {
+        const response = await fetch('/api/health', {
           method: 'GET',
-          timeout: 5000
-        } as any);
+          signal: AbortSignal.timeout(5000),
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        });
         
         if (response.ok) {
           const healthData = await response.json();
