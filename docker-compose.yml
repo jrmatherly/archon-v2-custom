@@ -88,7 +88,7 @@ services:
       - proxy
     ports:
       - "${ARCHON_MCP_PORT:-8051}:${ARCHON_MCP_PORT:-8051}"
-      - "8055:8055"
+    #  - "8055:8055"
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
@@ -110,7 +110,7 @@ services:
       - "traefik.http.routers.archon-mcp-rtr.middlewares=chain-no-auth@file,mcp-stripprefix"
       # HTTP Services
       - "traefik.http.routers.archon-mcp-rtr.service=archon-mcp-svc"
-      - "traefik.http.services.archon-mcp-svc.loadbalancer.server.port=8055"
+      - "traefik.http.services.archon-mcp-svc.loadbalancer.server.port=8051"
 
     depends_on:
       - archon-server
