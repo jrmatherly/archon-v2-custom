@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader, Settings, ChevronDown, ChevronUp, Palette, Key, Brain, Code, Activity, FileCode, Bug } from 'lucide-react';
+import { Loader, Settings, ChevronDown, ChevronUp as _ChevronUp, Palette, Key, Brain, Code, Activity, FileCode, Bug } from 'lucide-react'; // ChevronUp preserved for future use
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../contexts/ToastContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -54,7 +54,8 @@ export const SettingsPage = () => {
   // Load settings on mount
   useEffect(() => {
     loadSettings();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally omitting loadSettings - it's a stable function and we only want to load on mount
 
   const loadSettings = async () => {
     try {

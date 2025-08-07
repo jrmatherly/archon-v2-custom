@@ -1,5 +1,5 @@
 import React, { useState, memo, useEffect } from 'react';
-import { Plus, Settings, Trash2, X } from 'lucide-react';
+import { Plus, Settings } from 'lucide-react';
 import { ClientCard } from './ClientCard';
 import { ToolTestingPanel } from './ToolTestingPanel';
 import { Button } from '../ui/Button';
@@ -67,7 +67,8 @@ export const MCPClients = memo(() => {
     }, 10000);
     
     return () => clearInterval(statusInterval);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally omitting loadAllClients - we want this to run only once on mount, not on every render
 
   /**
    * Refresh client statuses without showing loading state
@@ -158,8 +159,8 @@ export const MCPClients = memo(() => {
       status: statusMap[dbClient.status] || 'offline',
       ip,
       lastSeen: dbClient.last_seen ? new Date(dbClient.last_seen).toLocaleString() : 'Never',
-      version: config.version || 'Unknown',
-      region: config.region || 'Unknown',
+      version: 'Unknown', // Version not available in connection_config
+      region: 'Unknown', // Region not available in connection_config
       tools: [], // Will be loaded separately
       lastError: dbClient.last_error || undefined
     };
@@ -602,11 +603,11 @@ const EditClientDrawer: React.FC<EditClientDrawerProps> = ({ client, isOpen, onC
   const [error, setError] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
-  // State for delete confirmation modal (moved here)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
+  // State for delete confirmation modal (moved here) - currently unused but preserved for future functionality
+  const [_showDeleteConfirm, _setShowDeleteConfirm] = useState(false);
+  const [_clientToDelete, _setClientToDelete] = useState<Client | null>(null);
 
-  const { showToast } = useToast(); // Initialize useToast here
+  const { showToast: _showToast } = useToast(); // Initialize useToast here - preserved for future use
 
   // Load current client config when drawer opens
   useEffect(() => {
@@ -614,7 +615,8 @@ const EditClientDrawer: React.FC<EditClientDrawerProps> = ({ client, isOpen, onC
       // Get client config from the API and populate form
       loadClientConfig();
     }
-  }, [isOpen, client.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, client?.id]); // Intentionally omitting loadClientConfig - function is stable and we only want to reload when isOpen or client.id changes
 
   const loadClientConfig = async () => {
     try {

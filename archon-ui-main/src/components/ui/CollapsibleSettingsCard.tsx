@@ -7,6 +7,8 @@ interface CollapsibleSettingsCardProps {
   title: string;
   icon: LucideIcon;
   accentColor?: 'purple' | 'green' | 'pink' | 'blue' | 'cyan' | 'orange';
+  iconColor?: string; // Custom icon color override
+  borderColor?: string; // Custom border color override
   children: React.ReactNode;
   defaultExpanded?: boolean;
   storageKey?: string;
@@ -16,6 +18,8 @@ export const CollapsibleSettingsCard: React.FC<CollapsibleSettingsCardProps> = (
   title,
   icon: Icon,
   accentColor = 'blue',
+  iconColor,
+  borderColor,
   children,
   defaultExpanded = true,
   storageKey
@@ -62,6 +66,16 @@ export const CollapsibleSettingsCard: React.FC<CollapsibleSettingsCardProps> = (
     orange: 'text-orange-500 filter drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]'
   };
 
+  // Default border color mapping based on accent color
+  const borderColorMap = {
+    purple: 'border-purple-200 dark:border-purple-800',
+    green: 'border-green-200 dark:border-green-800',
+    pink: 'border-pink-200 dark:border-pink-800',
+    blue: 'border-blue-200 dark:border-blue-800',
+    cyan: 'border-cyan-200 dark:border-cyan-800',
+    orange: 'border-orange-200 dark:border-orange-800'
+  };
+
   return (
     <motion.div
       animate={isFlickering ? {
@@ -72,11 +86,11 @@ export const CollapsibleSettingsCard: React.FC<CollapsibleSettingsCardProps> = (
         times: [0, 0.1, 0.2, 0.3, 0.6, 0.8, 1],
       }}
     >
-      <div>
+      <div className={`p-4 rounded-lg border ${borderColor || borderColorMap[accentColor]} bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
-            <Icon className={`mr-2 ${iconColorMap[accentColor]} size-5`} />
+            <Icon className={`mr-2 ${iconColor || iconColorMap[accentColor]} size-5`} />
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
               {title}
             </h2>

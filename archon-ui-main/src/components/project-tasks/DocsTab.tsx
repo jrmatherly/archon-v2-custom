@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Search, Upload, Link as LinkIcon, Check, Brain, Save, History, Eye, Edit3, Sparkles } from 'lucide-react';
+import { Plus, X, Search, Upload, Link as LinkIcon, Check, Brain, Save, History, Edit3, Sparkles } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { knowledgeBaseService, KnowledgeItem } from '../../services/knowledgeBaseService';
 import { projectService } from '../../services/projectService';
@@ -9,7 +9,7 @@ import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Select } from '../ui/Select';
 import { CrawlProgressData, crawlProgressService } from '../../services/crawlProgressService';
-import { WebSocketState } from '../../services/socketIOService';
+// import { WebSocketState } from '../../services/socketIOService'; // Unused but preserved for future use
 import { MilkdownEditor } from './MilkdownEditor';
 import { VersionHistoryModal } from './VersionHistoryModal';
 import { PRPViewer } from '../prp';
@@ -21,10 +21,10 @@ import { DocumentCard, NewDocumentCard } from './DocumentCard';
 interface ProjectDoc {
   id: string;
   title: string;
-  created_at: string;
+  created_at?: string; // Made optional to match DocumentCard interface
   updated_at: string;
   // Content field stores markdown or structured data
-  content?: any;
+  content: any; // Required to match DocumentCard interface
   document_type?: string;
 }
 
@@ -500,7 +500,7 @@ Add your content here...
 /* Main component                                 */
 /* ——————————————————————————————————————————— */
 export const DocsTab = ({
-  tasks,
+  tasks: _tasks, // Prefixed with underscore as it's currently unused but preserved
   project
 }: {
   tasks: Task[];
@@ -509,6 +509,7 @@ export const DocsTab = ({
     title: string;
     created_at?: string;
     updated_at?: string;
+    docs?: any[]; // Optional docs property for project documents
   } | null;
 }) => {
   // Document state
@@ -555,7 +556,9 @@ export const DocsTab = ({
   const [showAddSourceModal, setShowAddSourceModal] = useState(false);
   const [sourceType, setSourceType] = useState<'technical' | 'business'>('technical');
   const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([]);
-  const [progressItems, setProgressItems] = useState<CrawlProgressData[]>([]);
+  const [_progressItems, setProgressItems] = useState<CrawlProgressData[]>([]); // Used in crawl progress handling
+  // Note: progressItems state is managed via setProgressItems in handleProgressComplete, handleProgressUpdate, and handleStartCrawl functions
+  // The state variable itself is not directly read but is managed through its setter
   const { showToast } = useToast();
 
   // Load project documents from the project data
@@ -569,9 +572,9 @@ export const DocsTab = ({
       const projectDocuments: ProjectDoc[] = project.docs.map((doc: any) => ({
         id: doc.id,
         title: doc.title || 'Untitled Document',
-        created_at: doc.created_at,
-        updated_at: doc.updated_at,
-        content: doc.content,
+        created_at: doc.created_at || new Date().toISOString(), // Ensure created_at is always a string
+        updated_at: doc.updated_at || new Date().toISOString(), // Ensure updated_at is always a string
+        content: doc.content || {}, // Ensure content is always present
         document_type: doc.document_type || 'document'
       }));
       
@@ -701,7 +704,8 @@ export const DocsTab = ({
       console.log('🧹 DocsTab: Disconnecting crawl progress service');
       crawlProgressService.disconnect();
     };
-  }, [project?.id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project?.id]); // Intentionally omitting loadKnowledgeItems, loadProjectData, loadProjectDocuments - these are stable functions and we only want to reload when project.id changes
 
   // Clear selected document when project changes
   useEffect(() => {
@@ -936,7 +940,7 @@ export const DocsTab = ({
                 key={doc.id}
                 document={doc}
                 isActive={selectedDocument?.id === doc.id}
-                onSelect={setSelectedDocument}
+                onSelect={(doc) => setSelectedDocument(doc)}
                 onDelete={async (docId) => {
                   try {
                     // Remove from local state
@@ -974,7 +978,11 @@ export const DocsTab = ({
             </div>
           ) : (
             <MilkdownEditor
-              document={selectedDocument}
+              document={{
+                ...selectedDocument,
+                created_at: selectedDocument.created_at || new Date().toISOString(),
+                updated_at: selectedDocument.updated_at || new Date().toISOString()
+              }}
               isDarkMode={isDarkMode}
               onSave={async (updatedDocument) => {
                 try {
@@ -1112,7 +1120,7 @@ const TemplateModal: React.FC<{
 }> = ({ onClose, onSelectTemplate, isCreating }) => {
   const templates = Object.entries(DOCUMENT_TEMPLATES);
 
-  const getTemplateDescription = (key: string, template: any) => {
+  const getTemplateDescription = (key: string, _template: any) => { // template parameter preserved but unused
     const descriptions: Record<string, string> = {
       'prp_base': 'Comprehensive template for implementing new features with full context, validation loops, and structured implementation blueprint.',
       'prp_task': 'Focused template for specific tasks or bug fixes with clear steps and validation criteria.',

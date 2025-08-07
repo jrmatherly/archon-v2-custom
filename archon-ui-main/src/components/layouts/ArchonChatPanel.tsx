@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Send, User, WifiOff, RefreshCw, BookOpen, Search } from 'lucide-react';
+import { Send, User, WifiOff, RefreshCw } from 'lucide-react';
 import { ArchonLoadingSpinner, EdgeLitEffect } from '../animations/Animations';
 import { agentChatService, ChatMessage } from '../../services/agentChatService';
 
@@ -108,7 +108,7 @@ export const ArchonChatPanel: React.FC<ArchonChatPanelProps> = props => {
               setIsStreaming(false);
               setStreamingMessage('');
             },
-            (error: Event) => {
+            (error: Event | Error) => {
               console.error('WebSocket error:', error);
               // Don't set error message here, let the status handler manage it
             },

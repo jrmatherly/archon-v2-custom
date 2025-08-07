@@ -6,7 +6,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
-  accentColor?: 'purple' | 'green' | 'pink' | 'blue' | 'cyan' | 'orange';
+  accentColor?: 'purple' | 'green' | 'pink' | 'blue' | 'cyan' | 'orange' | 'gray';
   neonLine?: boolean;
   icon?: React.ReactNode;
 }
@@ -52,7 +52,8 @@ export const Button: React.FC<ButtonProps> = ({
     pink: 'bg-pink-500 shadow-[0_0_10px_2px_rgba(236,72,153,0.4)] dark:shadow-[0_0_20px_5px_rgba(236,72,153,0.7)]',
     blue: 'bg-blue-500 shadow-[0_0_10px_2px_rgba(59,130,246,0.4)] dark:shadow-[0_0_20px_5px_rgba(59,130,246,0.7)]',
     cyan: 'bg-cyan-500 shadow-[0_0_10px_2px_rgba(34,211,238,0.4)] dark:shadow-[0_0_20px_5px_rgba(34,211,238,0.7)]',
-    orange: 'bg-orange-500 shadow-[0_0_10px_2px_rgba(249,115,22,0.4)] dark:shadow-[0_0_20px_5px_rgba(249,115,22,0.7)]'
+    orange: 'bg-orange-500 shadow-[0_0_10px_2px_rgba(249,115,22,0.4)] dark:shadow-[0_0_20px_5px_rgba(249,115,22,0.7)]',
+    gray: 'bg-gray-500 shadow-[0_0_10px_2px_rgba(107,114,128,0.4)] dark:shadow-[0_0_20px_5px_rgba(107,114,128,0.7)]'
   };
   return <button className={`
         inline-flex items-center justify-center transition-all duration-200

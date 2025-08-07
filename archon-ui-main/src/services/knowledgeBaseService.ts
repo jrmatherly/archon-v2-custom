@@ -6,12 +6,13 @@
 export interface KnowledgeItemMetadata {
   knowledge_type?: 'technical' | 'business'
   tags?: string[]
-  source_type?: 'url' | 'file'
+  source_type?: 'url' | 'file' | 'group'
   status?: 'active' | 'processing' | 'error'
   description?: string
   last_scraped?: string
   chunks_count?: number
   word_count?: number
+  code_examples_count?: number
   file_name?: string
   file_type?: string
   page_count?: number
@@ -42,7 +43,7 @@ export interface KnowledgeItemsResponse {
 export interface KnowledgeItemsFilter {
   knowledge_type?: 'technical' | 'business'
   tags?: string[]
-  source_type?: 'url' | 'file'
+  source_type?: 'url' | 'file' | 'group'
   search?: string
   page?: number
   per_page?: number

@@ -314,10 +314,11 @@ export const KnowledgeItemCard = ({
           <div className="flex items-center gap-2 mb-3 card-3d-layer-1">
             {/* Source type icon */}
             {item.metadata.source_type === 'url' ? (
-              <LinkIcon 
-                className={`w-4 h-4 ${sourceIconColor}`} 
-                title={item.metadata.original_url || item.url || 'URL not available'}
-              />
+              <span title={item.metadata.original_url || item.url || 'URL not available'}>
+                <LinkIcon 
+                  className={`w-4 h-4 ${sourceIconColor}`} 
+                />
+              </span>
             ) : (
               <Upload className={`w-4 h-4 ${sourceIconColor}`} />
             )}

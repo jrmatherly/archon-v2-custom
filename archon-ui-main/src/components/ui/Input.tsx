@@ -1,6 +1,6 @@
 import React from 'react';
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  accentColor?: 'purple' | 'green' | 'pink' | 'blue';
+  accentColor?: 'purple' | 'green' | 'pink' | 'blue' | 'orange';
   icon?: React.ReactNode;
   label?: string;
 }
@@ -15,7 +15,8 @@ export const Input: React.FC<InputProps> = ({
     purple: 'focus-within:border-purple-500 focus-within:shadow-[0_0_15px_rgba(168,85,247,0.5)]',
     green: 'focus-within:border-emerald-500 focus-within:shadow-[0_0_15px_rgba(16,185,129,0.5)]',
     pink: 'focus-within:border-pink-500 focus-within:shadow-[0_0_15px_rgba(236,72,153,0.5)]',
-    blue: 'focus-within:border-blue-500 focus-within:shadow-[0_0_15px_rgba(59,130,246,0.5)]'
+    blue: 'focus-within:border-blue-500 focus-within:shadow-[0_0_15px_rgba(59,130,246,0.5)]',
+    orange: 'focus-within:border-orange-500 focus-within:shadow-[0_0_15px_rgba(249,115,22,0.5)]'
   };
   return <div className="w-full">
       {label && <label className="block text-gray-600 dark:text-zinc-400 text-sm mb-1.5">

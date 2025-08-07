@@ -114,7 +114,8 @@ export const MCPPage = () => {
 		} else {
 			mcpServerService.disconnectLogs();
 		}
-	}, [serverStatus.status]);
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [serverStatus.status]); // Intentionally omitting 'config' - we only want to reload logs when server status changes, not when config changes
 
 	// Auto-scroll logs to bottom when new logs arrive
 	useEffect(() => {

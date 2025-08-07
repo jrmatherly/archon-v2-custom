@@ -65,6 +65,8 @@ class AgentChatService {
 
   /**
    * Get WebSocket URL for a session
+   * Note: Currently unused - designed for session-specific WebSocket URL generation
+   * The WebSocket connection currently uses getWebSocketConfig() instead
    */
   private getWebSocketUrl(sessionId: string): string {
     // Import is added at the top of the file
@@ -73,6 +75,8 @@ class AgentChatService {
 
   /**
    * Check if session validation is cached and still valid
+   * Note: Currently unused - designed for session validation caching optimization
+   * Could be integrated into connectWebSocket for performance improvements
    */
   private isSessionValidationCached(sessionId: string): boolean {
     const cached = this.sessionValidationCache.get(sessionId);
@@ -91,6 +95,8 @@ class AgentChatService {
 
   /**
    * Cache session validation result
+   * Note: Currently unused - designed for session validation caching optimization
+   * Could be integrated into connectWebSocket for performance improvements
    */
   private cacheSessionValidation(sessionId: string, valid: boolean): void {
     this.sessionValidationCache.set(sessionId, {
@@ -738,4 +744,4 @@ class AgentChatService {
 
 // Export singleton instance
 export const agentChatService = new AgentChatService();
-export type { ChatMessage, ChatSession, ChatRequest };
+export type { ChatSession, ChatRequest }; // ChatMessage already exported as interface on line 16
