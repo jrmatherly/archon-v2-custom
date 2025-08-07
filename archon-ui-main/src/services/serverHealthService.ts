@@ -27,13 +27,32 @@ class ServerHealthService {
     }
   }
 
+  /**
+   * Get the proper health check URL to avoid Traefik routing conflicts
+   */
+  private getHealthUrl(): string {
+    // In production (Traefik), use absolute URL to ensure proper routing
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return `${window.location.protocol}//${window.location.host}/api/health`;
+    }
+    
+    // In development, use relative URL
+    return '/api/health';
+  }
+
   async checkHealth(): Promise<boolean> {
     try {
-      console.log('🏥 [Health] Checking server health at /api/health');
-      // Use the proxied /api/health endpoint which works in both dev and Docker
-      const response = await fetch('/api/health', {
+      // Construct absolute URL for health check to avoid Traefik routing conflicts
+      const healthUrl = this.getHealthUrl();
+      console.log('🏥 [Health] Checking server health at', healthUrl);
+      
+      const response = await fetch(healthUrl, {
         method: 'GET',
-        signal: AbortSignal.timeout(10000) // 10 second timeout (increased for heavy operations)
+        signal: AbortSignal.timeout(10000), // 10 second timeout (increased for heavy operations)
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
+        }
       });
       
       console.log('🏥 [Health] Response:', response.status, response.statusText);
@@ -50,7 +69,31 @@ class ServerHealthService {
       return false;
     } catch (error) {
       console.error('🏥 [Health] Health check failed:', error);
-      // Health check failed
+      
+      // For network errors on MCP page, try one more time with a shorter timeout
+      if (window.location.pathname === '/mcp' && error instanceof TypeError) {
+        console.log('🏥 [Health] Retrying health check on MCP page...');
+        try {
+          const retryResponse = await fetch(this.getHealthUrl(), {
+            method: 'GET',
+            signal: AbortSignal.timeout(5000), // Shorter timeout for retry
+            headers: {
+              'Accept': 'application/json',
+              'Cache-Control': 'no-cache'
+            }
+          });
+          
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            const isHealthy = data.status === 'healthy' || data.status === 'online' || data.status === 'initializing';
+            console.log('🏥 [Health] Retry successful:', isHealthy);
+            return isHealthy;
+          }
+        } catch (retryError) {
+          console.error('🏥 [Health] Retry also failed:', retryError);
+        }
+      }
+      
       return false;
     }
   }
