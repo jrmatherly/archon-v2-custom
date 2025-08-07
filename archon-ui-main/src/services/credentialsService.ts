@@ -53,10 +53,8 @@ export interface CodeExtractionSettings {
   ENABLE_CODE_SUMMARIES: boolean;
 }
 
-import { getApiUrl } from '../config/api';
-
 class CredentialsService {
-  private baseUrl = getApiUrl();
+  private baseUrl = ''; // Use relative URLs to avoid CORS issues
 
   async getAllCredentials(): Promise<Credential[]> {
     const response = await fetch(`${this.baseUrl}/api/credentials`);
