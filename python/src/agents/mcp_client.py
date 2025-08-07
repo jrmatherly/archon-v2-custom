@@ -37,11 +37,18 @@ class MCPClient:
                 # Fallback for when running in agents container
                 import os
 
+                # Get configuration from environment variables
+                mcp_host = os.getenv(
+                    "ARCHON_MCP_HOST",
+                    "archon-mcp" if os.getenv("DOCKER_CONTAINER") else "localhost",
+                )
                 mcp_port = os.getenv("ARCHON_MCP_PORT", "8051")
-                if os.getenv("DOCKER_CONTAINER"):
-                    self.mcp_url = f"http://archon-mcp:{mcp_port}"
-                else:
-                    self.mcp_url = f"http://localhost:{mcp_port}"
+                mcp_protocol = os.getenv("ARCHON_MCP_PROTOCOL", "http")
+                mcp_path = os.getenv("ARCHON_MCP_PATH", "")
+
+                # Build URL with proper path handling
+                base_url = f"{mcp_protocol}://{mcp_host}:{mcp_port}"
+                self.mcp_url = f"{base_url}{mcp_path}" if mcp_path else base_url
 
         self.client = httpx.AsyncClient(timeout=30.0)
         logger.info(f"MCP Client initialized with URL: {self.mcp_url}")

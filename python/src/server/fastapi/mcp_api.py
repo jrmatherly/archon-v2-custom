@@ -53,7 +53,7 @@ class MCPServerManager:
     """Manages the MCP Docker container lifecycle."""
 
     def __init__(self):
-        self.container_name = "Archon-MCP"  # Container name from docker-compose.yml
+        self.container_name = "archon-mcp"  # Container name from docker-compose.yml
         self.docker_client = None
         self.container = None
         self.status: str = "stopped"
