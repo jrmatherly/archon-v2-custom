@@ -133,10 +133,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         
         isBackendReady = true; // If we got here, backend is ready
         
-        // For encrypted credentials, check encrypted_value instead of value
+        // For encrypted credentials, check both encrypted_value and value fields
+        // Some encrypted credentials may be stored in 'value' field instead of 'encrypted_value'
         const hasApiKey = openaiKey && (
-          (openaiKey.is_encrypted && openaiKey.encrypted_value) || 
-          (!openaiKey.is_encrypted && openaiKey.value && openaiKey.value.trim() !== '')
+          // Check encrypted_value field first (preferred for encrypted)
+          (openaiKey.is_encrypted && openaiKey.encrypted_value && openaiKey.encrypted_value.trim() !== '') ||
+          // Fallback to value field (may contain encrypted data or plain text)
+          (openaiKey.value && openaiKey.value.trim() !== '') ||
+          // Handle edge case where is_encrypted is true but data is in value field
+          (openaiKey.is_encrypted && openaiKey.value && openaiKey.value.trim() !== '')
         );
         
         console.log('🔍 API key validation result:', { hasApiKey });
