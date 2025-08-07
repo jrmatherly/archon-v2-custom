@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '../contexts/ToastContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion /* , AnimatePresence */ } from 'framer-motion';
 import { useStaggeredEntrance } from '../hooks/useStaggeredEntrance';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/project-tasks/Tabs';
 import { DocsTab } from '../components/project-tasks/DocsTab';
@@ -8,7 +8,7 @@ import { DocsTab } from '../components/project-tasks/DocsTab';
 // import { DataTab } from '../components/project-tasks/DataTab';
 import { TasksTab } from '../components/project-tasks/TasksTab';
 import { Button } from '../components/ui/Button';
-import { ChevronRight, ShoppingCart, Code, Briefcase, Layers, Plus, X, AlertCircle, Loader2, Heart, BarChart3, Trash2, Pin, ListTodo, Activity, CheckCircle2, Clipboard } from 'lucide-react';
+import { /* ChevronRight, */ ShoppingCart, Code, Briefcase, Layers, Plus, X, AlertCircle, Loader2, Heart, BarChart3, Trash2, Pin, ListTodo, Activity, CheckCircle2, Clipboard } from 'lucide-react';
 
 // Import our service layer and types
 import { projectService } from '../services/projectService';
@@ -25,6 +25,8 @@ interface ProjectPageProps {
 }
 
 // Icon mapping for projects (since database stores icon names as strings)
+// Currently unused but preserved for future icon functionality
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getProjectIcon = (iconName?: string) => {
   const iconMap = {
     'ShoppingCart': <ShoppingCart className="w-5 h-5" />,
@@ -149,7 +151,8 @@ export function ProjectPage({
     };
     
     loadProjectsData();
-  }, []); // Only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount - loadTaskCountsForAllProjects is stable
 
   // Set up Socket.IO for real-time project list updates (after initial load)
   useEffect(() => {
@@ -201,7 +204,8 @@ export function ProjectPage({
       projectListSocketIO.disconnect();
       cleanup.then(cleanupFn => cleanupFn && cleanupFn());
     };
-  }, []); // Only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount - loadTaskCountsForAllProjects is stable
 
   // Load task counts for all projects
   const loadTaskCountsForAllProjects = useCallback(async (projectIds: string[]) => {
@@ -493,7 +497,7 @@ export function ProjectPage({
       console.error('Failed to update project pin status:', error);
       showToast('Failed to update project. Please try again.', 'error');
     }
-  }, [projectService, setProjects, selectedProject, setSelectedProject, showToast]);
+  }, [setProjects, selectedProject, setSelectedProject, showToast]);
 
   const handleCreateProject = async () => {
     if (!newProjectForm.title.trim()) {
@@ -547,7 +551,7 @@ export function ProjectPage({
         
         // Close modal immediately
         setIsNewProjectModalOpen(false);
-        setNewProjectForm({ title: '', description: '' });
+        setNewProjectForm({ title: '', description: '', color: 'blue' as const });
         setIsCreatingProject(false);
         
         // Set up Socket.IO connection for real-time progress
@@ -587,7 +591,7 @@ export function ProjectPage({
         setSelectedProject(newProject);
         setShowProjectDetails(true);
         
-        setNewProjectForm({ title: '', description: '' });
+        setNewProjectForm({ title: '', description: '', color: 'blue' as const });
         setIsNewProjectModalOpen(false);
         setIsCreatingProject(false);
       }
@@ -611,7 +615,8 @@ export function ProjectPage({
     titleVariants
   } = useStaggeredEntrance([1, 2, 3], 0.15);
 
-  // Add animation for tab content
+  // Add animation for tab content - preserved for future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const tabContentVariants = {
     hidden: {
       opacity: 0,
@@ -724,7 +729,7 @@ export function ProjectPage({
                         console.error('Project creation failed:', error);
                         showToast(`Failed to create project: ${error}`, 'error');
                       }}
-                      onRetry={() => handleRetryProjectCreation(project.creationProgress!.progressId)}
+                      onRetry={() => project.creationProgress?.progressId && handleRetryProjectCreation(project.creationProgress.progressId)}
                     />
                   </motion.div>
                 ) : (

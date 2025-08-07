@@ -33,6 +33,8 @@ export interface Project {
   progress?: number;
   updated?: string; // Human-readable format
   pinned: boolean; // Database column - indicates if project is pinned for priority
+  color?: string; // UI color theme for project display
+  icon?: string; // Icon name for project display
   
   // Creation progress tracking for inline display
   creationProgress?: {
@@ -90,6 +92,8 @@ export interface CreateProjectRequest {
   data?: any[];
   technical_sources?: string[];
   business_sources?: string[];
+  color?: string; // UI color theme for project display
+  icon?: string; // Icon name for project display
 }
 
 // Update project request

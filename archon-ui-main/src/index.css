@@ -201,6 +201,7 @@
 /* Ensure scrollable content in expanded cards */
 .card-expanded .flex-1.overflow-hidden > .absolute {
   /* Removed max-height to allow full scrolling */
+  position: relative;
 }
 
 /* Screensaver Animations */
