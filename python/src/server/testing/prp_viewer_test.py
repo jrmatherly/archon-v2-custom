@@ -80,7 +80,7 @@ class PRPViewerTester:
         try:
             # Fetch project
             project_response = (
-                self.supabase.table("projects")
+                self.supabase.table("archon_projects")
                 .select("*")
                 .eq("id", self.project_id)
                 .execute()

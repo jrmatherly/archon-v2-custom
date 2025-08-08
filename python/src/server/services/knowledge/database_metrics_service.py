@@ -39,7 +39,9 @@ class DatabaseMetricsService:
 
             # Sources count
             sources_result = (
-                self.supabase.table("sources").select("*", count="exact").execute()
+                self.supabase.table("archon_sources")
+                .select("*", count="exact")
+                .execute()
             )
             metrics["sources_count"] = (
                 sources_result.count if sources_result.count else 0
@@ -47,7 +49,7 @@ class DatabaseMetricsService:
 
             # Crawled pages count
             pages_result = (
-                self.supabase.table("crawled_pages")
+                self.supabase.table("archon_crawled_pages")
                 .select("*", count="exact")
                 .execute()
             )
@@ -56,7 +58,7 @@ class DatabaseMetricsService:
             # Code examples count
             try:
                 code_examples_result = (
-                    self.supabase.table("code_examples")
+                    self.supabase.table("archon_code_examples")
                     .select("*", count="exact")
                     .execute()
                 )
@@ -98,7 +100,7 @@ class DatabaseMetricsService:
 
             # Get knowledge type distribution
             knowledge_types_result = (
-                self.supabase.table("sources")
+                self.supabase.table("archon_sources")
                 .select("metadata->knowledge_type")
                 .execute()
             )
@@ -112,7 +114,7 @@ class DatabaseMetricsService:
 
             # Get recent activity
             recent_sources = (
-                self.supabase.table("sources")
+                self.supabase.table("archon_sources")
                 .select("source_id, created_at")
                 .order("created_at", desc=True)
                 .limit(5)

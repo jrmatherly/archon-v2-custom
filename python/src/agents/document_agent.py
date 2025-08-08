@@ -14,7 +14,6 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-import httpx
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
 
@@ -69,7 +68,7 @@ class DocumentAgent(BaseAgent[DocumentDependencies, DocumentOperation]):
     def __init__(self, model: str = None, **kwargs):
         # Use provided model or fall back to default
         if model is None:
-            model = os.getenv("DOCUMENT_AGENT_MODEL", "openai:gpt-4.1-nano")
+            model = os.getenv("DOCUMENT_AGENT_MODEL", "openai:gpt-4o")
 
         super().__init__(
             model=model,
@@ -85,7 +84,7 @@ class DocumentAgent(BaseAgent[DocumentDependencies, DocumentOperation]):
         agent = Agent(
             model=self.model,
             deps_type=DocumentDependencies,
-            output_type=DocumentOperation,
+            result_type=DocumentOperation,
             system_prompt="""You are a Document Management Assistant that helps users create, update, and modify project documents through conversation.
 
 **Your Capabilities:**
@@ -156,19 +155,18 @@ class DocumentAgent(BaseAgent[DocumentDependencies, DocumentOperation]):
                 if not ctx.deps.project_id:
                     return "No project is currently selected. Please specify a project or create one first to manage documents."
 
-                # Get server URL from environment
-                server_url = os.getenv("API_SERVICE_URL", "http://archon-server:8181")
+                supabase = get_supabase_client()
+                response = (
+                    supabase.table("archon_projects")
+                    .select("docs")
+                    .eq("id", ctx.deps.project_id)
+                    .execute()
+                )
 
-                async with httpx.AsyncClient() as client:
-                    response = await client.get(
-                        f"{server_url}/api/projects/{ctx.deps.project_id}"
-                    )
+                if not response.data:
+                    return "No project found with the given ID."
 
-                    if response.status_code != 200:
-                        return f"Failed to fetch project: {response.status_code}"
-
-                    project_data = response.json()
-                    docs = project_data.get("docs", [])
+                docs = response.data[0].get("docs", [])
                 if not docs:
                     return "No documents found in this project."
 
@@ -190,19 +188,18 @@ class DocumentAgent(BaseAgent[DocumentDependencies, DocumentOperation]):
         ) -> str:
             """Get the content of a specific document by title."""
             try:
-                # Get server URL from environment
-                server_url = os.getenv("API_SERVICE_URL", "http://archon-server:8181")
+                supabase = get_supabase_client()
+                response = (
+                    supabase.table("archon_projects")
+                    .select("docs")
+                    .eq("id", ctx.deps.project_id)
+                    .execute()
+                )
 
-                async with httpx.AsyncClient() as client:
-                    response = await client.get(
-                        f"{server_url}/api/projects/{ctx.deps.project_id}"
-                    )
+                if not response.data:
+                    return "No project found."
 
-                    if response.status_code != 200:
-                        return f"Failed to fetch project: {response.status_code}"
-
-                    project_data = response.json()
-                    docs = project_data.get("docs", [])
+                docs = response.data[0].get("docs", [])
                 matching_docs = [
                     doc
                     for doc in docs

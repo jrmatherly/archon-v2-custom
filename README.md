@@ -38,7 +38,7 @@ Archon is a **Model Context Protocol (MCP) server** that creates a centralized k
 1. **Clone Repository**:
 
    ```bash
-   git clone https://github.com/coleam00/archon.git
+   git clone https://github.com/dynamous-community/Archon-V2-Alpha.git
    cd archon
    ```
 

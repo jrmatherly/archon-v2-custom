@@ -12,3 +12,5 @@ PROJECT_ANALYSIS_NOTES.md
 
 # Traefik Example
 /traefik-example
+.DS_Store
+upstream-changes-checklist.md

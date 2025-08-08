@@ -35,12 +35,11 @@ jobs:
       - name: Run Claude Code Review
         id: claude
         uses: anthropics/claude-code-action@beta
+        timeout-minutes: 15
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          timeout_minutes: "15"
-
-          # Custom trigger phrase for review
+          
+          # Custom trigger phrase for review workflow
           trigger_phrase: "@claude-review"
 
           # Review-specific instructions

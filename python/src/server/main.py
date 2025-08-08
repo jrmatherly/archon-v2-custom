@@ -16,7 +16,6 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
-import uvicorn.logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -57,6 +56,8 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Set up logging configuration to reduce noise
+import uvicorn.logging
+
 # Override uvicorn's access log format to be less verbose
 uvicorn_logger = logging.getLogger("uvicorn.access")
 uvicorn_logger.setLevel(
@@ -274,10 +275,13 @@ socket_app = create_socketio_app(app)
 if __name__ == "__main__":
     import uvicorn
 
+    port = int(os.getenv("ARCHON_SERVER_PORT", "8181"))
+    log_level = os.getenv("LOG_LEVEL", "info").lower()
+
     uvicorn.run(
         "main:socket_app",
         host="0.0.0.0",
-        port=int(os.getenv("ARCHON_SERVER_PORT", "8181")),
+        port=port,
         reload=True,
-        log_level="info",
+        log_level=log_level,
     )

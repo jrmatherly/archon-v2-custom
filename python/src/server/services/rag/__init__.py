@@ -7,4 +7,6 @@ that don't fit into other service categories. Currently includes web crawling op
 
 from .crawling_service import CrawlingService
 
-__all__ = ["CrawlingService"]
+__all__ = [
+    "CrawlingService"
+]

@@ -26,6 +26,7 @@ from ..config.logfire_config import (
     safe_set_attribute,
     safe_span,
 )
+from ..utils import get_supabase_client
 
 router = APIRouter(prefix="/api/mcp", tags=["mcp"])
 
@@ -53,7 +54,7 @@ class MCPServerManager:
     """Manages the MCP Docker container lifecycle."""
 
     def __init__(self):
-        self.container_name = "archon-mcp"  # Container name from docker-compose.yml
+        self.container_name = "Archon-MCP"  # Container name from docker-compose.yml
         self.docker_client = None
         self.container = None
         self.status: str = "stopped"
@@ -670,7 +671,7 @@ async def get_mcp_config():
                 from ..services.credential_service import credential_service
 
                 model_choice = await credential_service.get_credential(
-                    "MODEL_CHOICE", "gpt-4.1-nano"
+                    "MODEL_CHOICE", "gpt-4o-mini"
                 )
                 config["model_choice"] = model_choice
                 config["use_contextual_embeddings"] = (
@@ -691,7 +692,7 @@ async def get_mcp_config():
                 ).lower() == "true"
             except Exception:
                 # Fallback to default model
-                config["model_choice"] = "gpt-4.1-nano"
+                config["model_choice"] = "gpt-4o-mini"
                 config["use_contextual_embeddings"] = False
                 config["use_hybrid_search"] = False
                 config["use_agentic_rag"] = False
@@ -702,7 +703,7 @@ async def get_mcp_config():
             safe_set_attribute(span, "port", config["port"])
             safe_set_attribute(span, "transport", "sse")
             safe_set_attribute(
-                span, "model_choice", config.get("model_choice", "gpt-4.1-nano")
+                span, "model_choice", config.get("model_choice", "gpt-4o-mini")
             )
 
             return config
@@ -726,6 +727,7 @@ async def save_configuration(config: ServerConfig):
             api_logger.info(
                 f"Saving MCP server configuration | transport={config.transport} | host={config.host} | port={config.port}"
             )
+            supabase_client = get_supabase_client()
 
             config_json = config.model_dump_json()
 

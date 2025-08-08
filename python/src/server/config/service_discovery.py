@@ -68,7 +68,7 @@ class ServiceDiscovery:
             protocol: Protocol to use (default: "http")
 
         Returns:
-            Full service URL (e.g., "http://archon-api:8080")
+            Full service URL (e.g., "http://archon-api:8181")
         """
         cache_key = f"{protocol}://{service}"
         if cache_key in self._cache:
@@ -76,7 +76,7 @@ class ServiceDiscovery:
 
         # Normalize service name
         service_name = self.SERVICE_NAMES.get(service, service)
-        port = self.DEFAULT_PORTS.get(service, 8080)
+        port = self.DEFAULT_PORTS.get(service, 8181)
 
         if self.environment == Environment.DOCKER_COMPOSE:
             # Docker Compose uses service names directly

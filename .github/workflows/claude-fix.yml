@@ -35,12 +35,11 @@ jobs:
       - name: Run Claude Code Fix
         id: claude
         uses: anthropics/claude-code-action@beta
+        timeout-minutes: 30
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          timeout_minutes: "30"
           
-          # Custom trigger phrase for fix
+          # Custom trigger phrase for fix workflow
           trigger_phrase: "@claude-fix"
           
           # Fix-specific instructions

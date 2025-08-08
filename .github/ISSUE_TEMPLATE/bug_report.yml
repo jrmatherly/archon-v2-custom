@@ -2,7 +2,7 @@ name: 🐛 Bug Report
 description: Report a bug to help us improve Archon V2 Alpha
 title: "🐛 [Bug]: "
 labels: ["bug", "needs-triage"]
-assignees: []
+assignees: [""]
 
 body:
   - type: markdown

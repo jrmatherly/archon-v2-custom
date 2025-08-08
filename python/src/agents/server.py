@@ -124,7 +124,7 @@ async def lifespan(app: FastAPI):
         try:
             # Pass model configuration from credentials
             model_key = f"{name.upper()}_AGENT_MODEL"
-            model = AGENT_CREDENTIALS.get(model_key, "openai:gpt-4.1-nano")
+            model = AGENT_CREDENTIALS.get(model_key, "openai:gpt-4o-mini")
 
             app.state.agents[name] = agent_class(model=model)
             logger.info(f"Initialized {name} agent with model: {model}")
@@ -296,11 +296,12 @@ async def stream_agent(agent_type: str, request: AgentRequest):
 # Main entry point
 if __name__ == "__main__":
     port = int(os.getenv("ARCHON_AGENTS_PORT", "8052"))
+    log_level = os.getenv("LOG_LEVEL", "info").lower()
 
     uvicorn.run(
         "server:app",
         host="0.0.0.0",
         port=port,
-        log_level="info",
+        log_level=log_level,
         reload=False,  # Disable reload in production
     )

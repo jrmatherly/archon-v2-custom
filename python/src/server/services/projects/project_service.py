@@ -59,7 +59,9 @@ class ProjectService:
 
             # Insert project
             response = (
-                self.supabase_client.table("projects").insert(project_data).execute()
+                self.supabase_client.table("archon_projects")
+                .insert(project_data)
+                .execute()
             )
 
             if not response.data:
@@ -94,7 +96,7 @@ class ProjectService:
         """
         try:
             response = (
-                self.supabase_client.table("projects")
+                self.supabase_client.table("archon_projects")
                 .select("*")
                 .order("created_at", desc=True)
                 .execute()
@@ -132,7 +134,7 @@ class ProjectService:
         """
         try:
             response = (
-                self.supabase_client.table("projects")
+                self.supabase_client.table("archon_projects")
                 .select("*")
                 .eq("id", project_id)
                 .execute()
@@ -148,7 +150,7 @@ class ProjectService:
                 try:
                     # Get source IDs from project_sources table
                     sources_response = (
-                        self.supabase_client.table("project_sources")
+                        self.supabase_client.table("archon_project_sources")
                         .select("source_id, notes")
                         .eq("project_id", project["id"])
                         .execute()
@@ -167,7 +169,7 @@ class ProjectService:
                     # Fetch full source objects
                     if technical_source_ids:
                         tech_sources_response = (
-                            self.supabase_client.table("sources")
+                            self.supabase_client.table("archon_sources")
                             .select("*")
                             .in_("source_id", technical_source_ids)
                             .execute()
@@ -176,7 +178,7 @@ class ProjectService:
 
                     if business_source_ids:
                         biz_sources_response = (
-                            self.supabase_client.table("sources")
+                            self.supabase_client.table("archon_sources")
                             .select("*")
                             .in_("source_id", business_source_ids)
                             .execute()
@@ -210,7 +212,7 @@ class ProjectService:
         try:
             # First, check if project exists
             check_response = (
-                self.supabase_client.table("projects")
+                self.supabase_client.table("archon_projects")
                 .select("id")
                 .eq("id", project_id)
                 .execute()
@@ -220,7 +222,7 @@ class ProjectService:
 
             # Get task count for reporting
             tasks_response = (
-                self.supabase_client.table("tasks")
+                self.supabase_client.table("archon_tasks")
                 .select("id")
                 .eq("project_id", project_id)
                 .execute()
@@ -229,7 +231,7 @@ class ProjectService:
 
             # Delete the project (tasks will be deleted by cascade)
             response = (
-                self.supabase_client.table("projects")
+                self.supabase_client.table("archon_projects")
                 .delete()
                 .eq("id", project_id)
                 .execute()
@@ -256,7 +258,7 @@ class ProjectService:
         """
         try:
             response = (
-                self.supabase_client.table("projects")
+                self.supabase_client.table("archon_projects")
                 .select("features")
                 .eq("id", project_id)
                 .single()
@@ -324,13 +326,13 @@ class ProjectService:
             # Handle pinning logic - only one project can be pinned at a time
             if update_fields.get("pinned") is True:
                 # Unpin any other pinned projects
-                self.supabase_client.table("projects").update({"pinned": False}).neq(
-                    "id", project_id
-                ).eq("pinned", True).execute()
+                self.supabase_client.table("archon_projects").update(
+                    {"pinned": False}
+                ).neq("id", project_id).eq("pinned", True).execute()
 
             # Update the project
             response = (
-                self.supabase_client.table("projects")
+                self.supabase_client.table("archon_projects")
                 .update(update_data)
                 .eq("id", project_id)
                 .execute()

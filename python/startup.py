@@ -133,7 +133,8 @@ async def start_services():
     """Start the backend and frontend services."""
     print()
     print("🚀 Starting services...")
-    print("   Backend API will run on http://localhost:8080")
+    server_port = os.getenv("ARCHON_SERVER_PORT", "8181")
+    print(f"   Backend API will run on http://localhost:{server_port}")
     print("   Frontend UI will run on http://localhost:3737")
     print()
     print("💡 Tip: You can now configure all other settings via the Settings page!")
@@ -145,7 +146,7 @@ async def start_services():
     try:
         # Start using docker-compose
         print("🐳 Starting with Docker Compose...")
-        result = subprocess.run(["docker-compose", "up", "--build"], check=True)
+        result = subprocess.run(["docker", "compose", "up", "--build"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to start with Docker: {e}")
         print("   Trying manual startup...")
@@ -170,7 +171,8 @@ async def start_services():
         frontend_process = subprocess.Popen(["npm", "run", "dev"], cwd="archon-ui-main")
 
         print("✅ Services started!")
-        print("   Backend: http://localhost:8080")
+        server_port = os.getenv("ARCHON_SERVER_PORT", "8181")
+        print(f"   Backend: http://localhost:{server_port}")
         print("   Frontend: http://localhost:3737")
         print("   Press Ctrl+C to stop")
 

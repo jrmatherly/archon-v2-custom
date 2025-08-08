@@ -23,7 +23,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Credentials and Configuration Management Table
 -- This table stores both encrypted sensitive data and plain configuration settings
-CREATE TABLE IF NOT EXISTS settings (
+CREATE TABLE IF NOT EXISTS archon_settings (
     id UUID DEFAULT gen_random_uuid () PRIMARY KEY,
     key VARCHAR(255) UNIQUE NOT NULL,
     value TEXT, -- For plain text config values
@@ -40,9 +40,9 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 
 -- Create indexes for faster lookups
-CREATE INDEX IF NOT EXISTS idx_settings_key ON settings (key);
+CREATE INDEX IF NOT EXISTS idx_archon_settings_key ON archon_settings (key);
 
-CREATE INDEX IF NOT EXISTS idx_settings_category ON settings (category);
+CREATE INDEX IF NOT EXISTS idx_archon_settings_category ON archon_settings (category);
 
 -- Create trigger to automatically update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -53,17 +53,17 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_settings_updated_at 
-    BEFORE UPDATE ON settings 
+CREATE TRIGGER update_archon_settings_updated_at 
+    BEFORE UPDATE ON archon_settings 
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
 -- Create RLS (Row Level Security) policies for settings
-ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE archon_settings ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow service role full access" ON settings FOR ALL USING (auth.role () = 'service_role');
+CREATE POLICY "Allow service role full access" ON archon_settings FOR ALL USING (auth.role () = 'service_role');
 
-CREATE POLICY "Allow authenticated users to read and update" ON settings FOR ALL TO authenticated USING (true);
+CREATE POLICY "Allow authenticated users to read and update" ON archon_settings FOR ALL TO authenticated USING (true);
 
 -- =====================================================
 -- SECTION 3: INITIAL SETTINGS DATA
@@ -71,7 +71,7 @@ CREATE POLICY "Allow authenticated users to read and update" ON settings FOR ALL
 
 -- Server Configuration
 INSERT INTO
-    settings (
+    archon_settings (
         key,
         value,
         is_encrypted,
@@ -109,7 +109,7 @@ VALUES (
 
 -- RAG Strategy Configuration (all default to true)
 INSERT INTO
-    settings (
+    archon_settings (
         key,
         value,
         is_encrypted,
@@ -128,7 +128,7 @@ VALUES (
         '3',
         false,
         'rag_strategy',
-        'Maximum number of parallel workers for contextual embedding generation (reduces API rate limit pressure)'
+        'Maximum parallel workers for contextual embedding generation (1-10)'
     ),
     (
         'USE_HYBRID_SEARCH',
@@ -154,7 +154,7 @@ VALUES (
 
 -- Monitoring Configuration
 INSERT INTO
-    settings (
+    archon_settings (
         key,
         value,
         is_encrypted,
@@ -170,7 +170,7 @@ VALUES (
     ),
     (
         'PROJECTS_ENABLED',
-        'false',
+        'true',
         false,
         'features',
         'Enable or disable Projects and Tasks functionality'
@@ -185,7 +185,7 @@ VALUES (
 
 -- Placeholder for sensitive credentials (to be added via Settings UI)
 INSERT INTO
-    settings (
+    archon_settings (
         key,
         encrypted_value,
         is_encrypted,
@@ -202,7 +202,7 @@ VALUES (
 
 -- LLM Provider configuration settings
 INSERT INTO
-    settings (
+    archon_settings (
         key,
         value,
         is_encrypted,
@@ -233,7 +233,7 @@ VALUES (
 
 -- Add provider API key placeholders
 INSERT INTO
-    settings (
+    archon_settings (
         key,
         encrypted_value,
         is_encrypted,
@@ -253,7 +253,7 @@ VALUES (
 
 -- Insert Code Extraction Configuration Settings
 INSERT INTO
-    settings (
+    archon_settings (
         key,
         value,
         is_encrypted,
@@ -356,16 +356,152 @@ VALUES
 -- Only insert if they don't already exist
 ON CONFLICT (key) DO NOTHING;
 
+-- Crawling Performance Settings (from add_performance_settings.sql)
+INSERT INTO
+    archon_settings (
+        key,
+        value,
+        is_encrypted,
+        category,
+        description
+    )
+VALUES (
+        'CRAWL_BATCH_SIZE',
+        '50',
+        false,
+        'rag_strategy',
+        'Number of URLs to crawl in parallel per batch (10-100)'
+    ),
+    (
+        'CRAWL_MAX_CONCURRENT',
+        '10',
+        false,
+        'rag_strategy',
+        'Maximum concurrent browser sessions for crawling (1-20)'
+    ),
+    (
+        'CRAWL_WAIT_STRATEGY',
+        'domcontentloaded',
+        false,
+        'rag_strategy',
+        'When to consider page loaded: domcontentloaded, networkidle, or load'
+    ),
+    (
+        'CRAWL_PAGE_TIMEOUT',
+        '30000',
+        false,
+        'rag_strategy',
+        'Maximum time to wait for page load in milliseconds'
+    ),
+    (
+        'CRAWL_DELAY_BEFORE_HTML',
+        '0.5',
+        false,
+        'rag_strategy',
+        'Time to wait for JavaScript rendering in seconds (0.1-5.0)'
+    ) ON CONFLICT (key) DO NOTHING;
+
+-- Document Storage Performance Settings (from add_performance_settings.sql and optimize_batch_sizes.sql)
+INSERT INTO
+    archon_settings (
+        key,
+        value,
+        is_encrypted,
+        category,
+        description
+    )
+VALUES (
+        'DOCUMENT_STORAGE_BATCH_SIZE',
+        '100',
+        false,
+        'rag_strategy',
+        'Number of document chunks to process per batch (50-200) - increased for better performance'
+    ),
+    (
+        'EMBEDDING_BATCH_SIZE',
+        '200',
+        false,
+        'rag_strategy',
+        'Number of embeddings to create per API call (100-500) - increased for better throughput'
+    ),
+    (
+        'DELETE_BATCH_SIZE',
+        '100',
+        false,
+        'rag_strategy',
+        'Number of URLs to delete in one database operation (50-200) - increased for better performance'
+    ),
+    (
+        'ENABLE_PARALLEL_BATCHES',
+        'true',
+        false,
+        'rag_strategy',
+        'Enable parallel processing of document batches'
+    ) ON CONFLICT (key) DO
+UPDATE
+SET
+    value = EXCLUDED.value,
+    description = EXCLUDED.description;
+
+-- Advanced Performance Settings (from add_performance_settings.sql and optimize_batch_sizes.sql)
+INSERT INTO
+    archon_settings (
+        key,
+        value,
+        is_encrypted,
+        category,
+        description
+    )
+VALUES (
+        'MEMORY_THRESHOLD_PERCENT',
+        '80',
+        false,
+        'rag_strategy',
+        'Memory usage threshold for crawler dispatcher (50-90)'
+    ),
+    (
+        'DISPATCHER_CHECK_INTERVAL',
+        '0.5',
+        false,
+        'rag_strategy',
+        'How often to check memory usage in seconds (0.1-2.0)'
+    ),
+    (
+        'CODE_EXTRACTION_BATCH_SIZE',
+        '40',
+        false,
+        'rag_strategy',
+        'Number of code blocks to extract per batch (20-100) - increased for better performance'
+    ),
+    (
+        'CODE_SUMMARY_MAX_WORKERS',
+        '3',
+        false,
+        'rag_strategy',
+        'Maximum parallel workers for code summarization (1-10)'
+    ),
+    (
+        'CONTEXTUAL_EMBEDDING_BATCH_SIZE',
+        '50',
+        false,
+        'rag_strategy',
+        'Number of chunks to process in contextual embedding batch API calls (20-100)'
+    ) ON CONFLICT (key) DO
+UPDATE
+SET
+    value = EXCLUDED.value,
+    description = EXCLUDED.description;
+
 -- Add a comment to document when this migration was added
 COMMENT ON
-TABLE settings IS 'Stores application configuration including API keys, RAG settings, and code extraction parameters';
+TABLE archon_settings IS 'Stores application configuration including API keys, RAG settings, and code extraction parameters';
 
 -- =====================================================
 -- SECTION 4: KNOWLEDGE BASE TABLES
 -- =====================================================
 
 -- Create the sources table
-CREATE TABLE IF NOT EXISTS sources (
+CREATE TABLE IF NOT EXISTS archon_sources (
     source_id TEXT PRIMARY KEY,
     summary TEXT,
     total_word_count INTEGER DEFAULT 0,
@@ -376,21 +512,21 @@ CREATE TABLE IF NOT EXISTS sources (
 );
 
 -- Create indexes for better query performance
-CREATE INDEX IF NOT EXISTS idx_sources_title ON sources (title);
+CREATE INDEX IF NOT EXISTS idx_archon_sources_title ON archon_sources (title);
 
-CREATE INDEX IF NOT EXISTS idx_sources_metadata ON sources USING GIN (metadata);
+CREATE INDEX IF NOT EXISTS idx_archon_sources_metadata ON archon_sources USING GIN (metadata);
 
-CREATE INDEX IF NOT EXISTS idx_sources_knowledge_type ON sources (
+CREATE INDEX IF NOT EXISTS idx_archon_sources_knowledge_type ON archon_sources (
     (metadata ->> 'knowledge_type')
 );
 
 -- Add comments to document the new columns
-COMMENT ON COLUMN sources.title IS 'Descriptive title for the source (e.g., "Pydantic AI API Reference")';
+COMMENT ON COLUMN archon_sources.title IS 'Descriptive title for the source (e.g., "Pydantic AI API Reference")';
 
-COMMENT ON COLUMN sources.metadata IS 'JSONB field storing knowledge_type, tags, and other metadata';
+COMMENT ON COLUMN archon_sources.metadata IS 'JSONB field storing knowledge_type, tags, and other metadata';
 
 -- Create the documentation chunks table
-CREATE TABLE IF NOT EXISTS crawled_pages (
+CREATE TABLE IF NOT EXISTS archon_crawled_pages (
     id BIGSERIAL PRIMARY KEY,
     url VARCHAR NOT NULL,
     chunk_number INTEGER NOT NULL,
@@ -404,17 +540,17 @@ CREATE TABLE IF NOT EXISTS crawled_pages (
 UNIQUE (url, chunk_number),
 
 -- Add foreign key constraint to sources table
-FOREIGN KEY (source_id) REFERENCES sources(source_id) );
+FOREIGN KEY (source_id) REFERENCES archon_sources(source_id) );
 
 -- Create indexes for better performance
-CREATE INDEX ON crawled_pages USING ivfflat (embedding vector_cosine_ops);
+CREATE INDEX ON archon_crawled_pages USING ivfflat (embedding vector_cosine_ops);
 
-CREATE INDEX idx_crawled_pages_metadata ON crawled_pages USING GIN (metadata);
+CREATE INDEX idx_archon_crawled_pages_metadata ON archon_crawled_pages USING GIN (metadata);
 
-CREATE INDEX idx_crawled_pages_source_id ON crawled_pages (source_id);
+CREATE INDEX idx_archon_crawled_pages_source_id ON archon_crawled_pages (source_id);
 
 -- Create the code_examples table
-CREATE TABLE IF NOT EXISTS code_examples (
+CREATE TABLE IF NOT EXISTS archon_code_examples (
     id BIGSERIAL PRIMARY KEY,
     url VARCHAR NOT NULL,
     chunk_number INTEGER NOT NULL,
@@ -429,21 +565,21 @@ CREATE TABLE IF NOT EXISTS code_examples (
 UNIQUE (url, chunk_number),
 
 -- Add foreign key constraint to sources table
-FOREIGN KEY (source_id) REFERENCES sources(source_id) );
+FOREIGN KEY (source_id) REFERENCES archon_sources(source_id) );
 
 -- Create indexes for better performance
-CREATE INDEX ON code_examples USING ivfflat (embedding vector_cosine_ops);
+CREATE INDEX ON archon_code_examples USING ivfflat (embedding vector_cosine_ops);
 
-CREATE INDEX idx_code_examples_metadata ON code_examples USING GIN (metadata);
+CREATE INDEX idx_archon_code_examples_metadata ON archon_code_examples USING GIN (metadata);
 
-CREATE INDEX idx_code_examples_source_id ON code_examples (source_id);
+CREATE INDEX idx_archon_code_examples_source_id ON archon_code_examples (source_id);
 
 -- =====================================================
 -- SECTION 5: SEARCH FUNCTIONS
 -- =====================================================
 
 -- Create a function to search for documentation chunks
-CREATE OR REPLACE FUNCTION match_crawled_pages (
+CREATE OR REPLACE FUNCTION match_archon_crawled_pages (
   query_embedding VECTOR(1536),
   match_count INT DEFAULT 10,
   filter JSONB DEFAULT '{}'::jsonb,
@@ -469,17 +605,17 @@ BEGIN
     content,
     metadata,
     source_id,
-    1 - (crawled_pages.embedding <=> query_embedding) AS similarity
-  FROM crawled_pages
+    1 - (archon_crawled_pages.embedding <=> query_embedding) AS similarity
+  FROM archon_crawled_pages
   WHERE metadata @> filter
     AND (source_filter IS NULL OR source_id = source_filter)
-  ORDER BY crawled_pages.embedding <=> query_embedding
+  ORDER BY archon_crawled_pages.embedding <=> query_embedding
   LIMIT match_count;
 END;
 $$;
 
 -- Create a function to search for code examples
-CREATE OR REPLACE FUNCTION match_code_examples (
+CREATE OR REPLACE FUNCTION match_archon_code_examples (
   query_embedding VECTOR(1536),
   match_count INT DEFAULT 10,
   filter JSONB DEFAULT '{}'::jsonb,
@@ -507,11 +643,11 @@ BEGIN
     summary,
     metadata,
     source_id,
-    1 - (code_examples.embedding <=> query_embedding) AS similarity
-  FROM code_examples
+    1 - (archon_code_examples.embedding <=> query_embedding) AS similarity
+  FROM archon_code_examples
   WHERE metadata @> filter
     AND (source_filter IS NULL OR source_id = source_filter)
-  ORDER BY code_examples.embedding <=> query_embedding
+  ORDER BY archon_code_examples.embedding <=> query_embedding
   LIMIT match_count;
 END;
 $$;
@@ -521,20 +657,20 @@ $$;
 -- =====================================================
 
 -- Enable RLS on the knowledge base tables
-ALTER TABLE crawled_pages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE archon_crawled_pages ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE sources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE archon_sources ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE code_examples ENABLE ROW LEVEL SECURITY;
+ALTER TABLE archon_code_examples ENABLE ROW LEVEL SECURITY;
 
 -- Create policies that allow anyone to read
-CREATE POLICY "Allow public read access to crawled_pages" ON crawled_pages FOR
+CREATE POLICY "Allow public read access to archon_crawled_pages" ON archon_crawled_pages FOR
 SELECT TO public USING (true);
 
-CREATE POLICY "Allow public read access to sources" ON sources FOR
+CREATE POLICY "Allow public read access to archon_sources" ON archon_sources FOR
 SELECT TO public USING (true);
 
-CREATE POLICY "Allow public read access to code_examples" ON code_examples FOR
+CREATE POLICY "Allow public read access to archon_code_examples" ON archon_code_examples FOR
 SELECT TO public USING (true);
 
 -- =====================================================
@@ -554,7 +690,7 @@ END $$;
 -- No longer using enum to support flexible agent assignments
 
 -- Projects table
-CREATE TABLE IF NOT EXISTS projects (
+CREATE TABLE IF NOT EXISTS archon_projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
   description TEXT DEFAULT '',
@@ -568,10 +704,10 @@ CREATE TABLE IF NOT EXISTS projects (
 );
 
 -- Tasks table
-CREATE TABLE IF NOT EXISTS tasks (
+CREATE TABLE IF NOT EXISTS archon_tasks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
-  parent_task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
+  project_id UUID REFERENCES archon_projects(id) ON DELETE CASCADE,
+  parent_task_id UUID REFERENCES archon_tasks(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT DEFAULT '',
   status task_status DEFAULT 'todo',
@@ -588,9 +724,9 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 
 -- Project Sources junction table for many-to-many relationship
-CREATE TABLE IF NOT EXISTS project_sources (
+CREATE TABLE IF NOT EXISTS archon_project_sources (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
-    project_id UUID REFERENCES projects (id) ON DELETE CASCADE,
+    project_id UUID REFERENCES archon_projects (id) ON DELETE CASCADE,
     source_id TEXT NOT NULL, -- References sources in the knowledge base
     linked_at TIMESTAMPTZ DEFAULT NOW(),
     created_by TEXT DEFAULT 'system',
@@ -600,10 +736,10 @@ CREATE TABLE IF NOT EXISTS project_sources (
 );
 
 -- Document Versions table for version control of project JSONB fields only
-CREATE TABLE IF NOT EXISTS document_versions (
+CREATE TABLE IF NOT EXISTS archon_document_versions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
-    project_id UUID REFERENCES projects (id) ON DELETE CASCADE,
-    task_id UUID REFERENCES tasks (id) ON DELETE CASCADE, -- DEPRECATED: No longer used, kept for historical data
+    project_id UUID REFERENCES archon_projects (id) ON DELETE CASCADE,
+    task_id UUID REFERENCES archon_tasks (id) ON DELETE CASCADE, -- DEPRECATED: No longer used, kept for historical data
     field_name TEXT NOT NULL, -- 'docs', 'features', 'data', 'prd' (task fields no longer versioned)
     version_number INTEGER NOT NULL,
     content JSONB NOT NULL, -- Full snapshot of the field content
@@ -633,39 +769,39 @@ CREATE TABLE IF NOT EXISTS document_versions (
 );
 
 -- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks (project_id);
+CREATE INDEX IF NOT EXISTS idx_archon_tasks_project_id ON archon_tasks (project_id);
 
-CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks (status);
+CREATE INDEX IF NOT EXISTS idx_archon_tasks_status ON archon_tasks (status);
 
-CREATE INDEX IF NOT EXISTS idx_tasks_assignee ON tasks (assignee);
+CREATE INDEX IF NOT EXISTS idx_archon_tasks_assignee ON archon_tasks (assignee);
 
-CREATE INDEX IF NOT EXISTS idx_tasks_order ON tasks (task_order);
+CREATE INDEX IF NOT EXISTS idx_archon_tasks_order ON archon_tasks (task_order);
 
-CREATE INDEX IF NOT EXISTS idx_tasks_archived ON tasks (archived);
+CREATE INDEX IF NOT EXISTS idx_archon_tasks_archived ON archon_tasks (archived);
 
-CREATE INDEX IF NOT EXISTS idx_tasks_archived_at ON tasks (archived_at);
+CREATE INDEX IF NOT EXISTS idx_archon_tasks_archived_at ON archon_tasks (archived_at);
 
-CREATE INDEX IF NOT EXISTS idx_project_sources_project_id ON project_sources (project_id);
+CREATE INDEX IF NOT EXISTS idx_archon_project_sources_project_id ON archon_project_sources (project_id);
 
-CREATE INDEX IF NOT EXISTS idx_project_sources_source_id ON project_sources (source_id);
+CREATE INDEX IF NOT EXISTS idx_archon_project_sources_source_id ON archon_project_sources (source_id);
 
-CREATE INDEX IF NOT EXISTS idx_document_versions_project_id ON document_versions (project_id);
+CREATE INDEX IF NOT EXISTS idx_archon_document_versions_project_id ON archon_document_versions (project_id);
 
-CREATE INDEX IF NOT EXISTS idx_document_versions_task_id ON document_versions (task_id);
+CREATE INDEX IF NOT EXISTS idx_archon_document_versions_task_id ON archon_document_versions (task_id);
 
-CREATE INDEX IF NOT EXISTS idx_document_versions_field_name ON document_versions (field_name);
+CREATE INDEX IF NOT EXISTS idx_archon_document_versions_field_name ON archon_document_versions (field_name);
 
-CREATE INDEX IF NOT EXISTS idx_document_versions_version_number ON document_versions (version_number);
+CREATE INDEX IF NOT EXISTS idx_archon_document_versions_version_number ON archon_document_versions (version_number);
 
-CREATE INDEX IF NOT EXISTS idx_document_versions_created_at ON document_versions (created_at);
+CREATE INDEX IF NOT EXISTS idx_archon_document_versions_created_at ON archon_document_versions (created_at);
 
 -- Apply triggers to tables
-CREATE OR REPLACE TRIGGER update_projects_updated_at 
-    BEFORE UPDATE ON projects 
+CREATE OR REPLACE TRIGGER update_archon_projects_updated_at 
+    BEFORE UPDATE ON archon_projects 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE OR REPLACE TRIGGER update_tasks_updated_at 
-    BEFORE UPDATE ON tasks 
+CREATE OR REPLACE TRIGGER update_archon_tasks_updated_at 
+    BEFORE UPDATE ON archon_tasks 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Soft delete function for tasks
@@ -679,7 +815,7 @@ DECLARE
 BEGIN
     -- Check if task exists and is not already archived
     SELECT EXISTS(
-        SELECT 1 FROM tasks 
+        SELECT 1 FROM archon_tasks 
         WHERE id = task_id_param AND archived = FALSE
     ) INTO task_exists;
     
@@ -688,7 +824,7 @@ BEGIN
     END IF;
     
     -- Archive the task
-    UPDATE tasks 
+    UPDATE archon_tasks 
     SET 
         archived = TRUE,
         archived_at = NOW(),
@@ -697,7 +833,7 @@ BEGIN
     WHERE id = task_id_param;
     
     -- Also archive all subtasks
-    UPDATE tasks 
+    UPDATE archon_tasks 
     SET 
         archived = TRUE,
         archived_at = NOW(), 
@@ -710,34 +846,34 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Add comments to document the soft delete fields
-COMMENT ON COLUMN tasks.assignee IS 'The agent or user assigned to this task. Can be any valid agent name or "User"';
+COMMENT ON COLUMN archon_tasks.assignee IS 'The agent or user assigned to this task. Can be any valid agent name or "User"';
 
-COMMENT ON COLUMN tasks.archived IS 'Soft delete flag - TRUE if task is archived/deleted';
+COMMENT ON COLUMN archon_tasks.archived IS 'Soft delete flag - TRUE if task is archived/deleted';
 
-COMMENT ON COLUMN tasks.archived_at IS 'Timestamp when task was archived';
+COMMENT ON COLUMN archon_tasks.archived_at IS 'Timestamp when task was archived';
 
-COMMENT ON COLUMN tasks.archived_by IS 'User/system that archived the task';
+COMMENT ON COLUMN archon_tasks.archived_by IS 'User/system that archived the task';
 
 -- Add comments for versioning table
 COMMENT ON
-TABLE document_versions IS 'Version control for JSONB fields in projects only - task versioning has been removed to simplify MCP operations';
+TABLE archon_document_versions IS 'Version control for JSONB fields in projects only - task versioning has been removed to simplify MCP operations';
 
-COMMENT ON COLUMN document_versions.field_name IS 'Name of JSONB field being versioned (docs, features, data) - task fields and prd removed as unused';
+COMMENT ON COLUMN archon_document_versions.field_name IS 'Name of JSONB field being versioned (docs, features, data) - task fields and prd removed as unused';
 
-COMMENT ON COLUMN document_versions.content IS 'Full snapshot of field content at this version';
+COMMENT ON COLUMN archon_document_versions.content IS 'Full snapshot of field content at this version';
 
-COMMENT ON COLUMN document_versions.change_type IS 'Type of change: create, update, delete, restore, backup';
+COMMENT ON COLUMN archon_document_versions.change_type IS 'Type of change: create, update, delete, restore, backup';
 
-COMMENT ON COLUMN document_versions.document_id IS 'For docs arrays, the specific document ID that was changed';
+COMMENT ON COLUMN archon_document_versions.document_id IS 'For docs arrays, the specific document ID that was changed';
 
-COMMENT ON COLUMN document_versions.task_id IS 'DEPRECATED: No longer used for new versions, kept for historical task version data';
+COMMENT ON COLUMN archon_document_versions.task_id IS 'DEPRECATED: No longer used for new versions, kept for historical task version data';
 
 -- =====================================================
 -- SECTION 8: PROMPTS TABLE
 -- =====================================================
 
 -- Prompts table for managing agent system prompts
-CREATE TABLE IF NOT EXISTS prompts (
+CREATE TABLE IF NOT EXISTS archon_prompts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     prompt_name TEXT UNIQUE NOT NULL,
     prompt TEXT NOT NULL,
@@ -747,11 +883,11 @@ CREATE TABLE IF NOT EXISTS prompts (
 );
 
 -- Create index for faster lookups
-CREATE INDEX IF NOT EXISTS idx_prompts_name ON prompts (prompt_name);
+CREATE INDEX IF NOT EXISTS idx_archon_prompts_name ON archon_prompts (prompt_name);
 
 -- Add trigger to automatically update updated_at timestamp
-CREATE OR REPLACE TRIGGER update_prompts_updated_at 
-    BEFORE UPDATE ON prompts 
+CREATE OR REPLACE TRIGGER update_archon_prompts_updated_at 
+    BEFORE UPDATE ON archon_prompts 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =====================================================
@@ -759,38 +895,38 @@ CREATE OR REPLACE TRIGGER update_prompts_updated_at
 -- =====================================================
 
 -- Enable Row Level Security (RLS) for all tables
-ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE archon_projects ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE archon_tasks ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE project_sources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE archon_project_sources ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE document_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE archon_document_versions ENABLE ROW LEVEL SECURITY;
 
-ALTER TABLE prompts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE archon_prompts ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies for service role (full access)
-CREATE POLICY "Allow service role full access to projects" ON projects FOR ALL USING (auth.role () = 'service_role');
+CREATE POLICY "Allow service role full access to archon_projects" ON archon_projects FOR ALL USING (auth.role () = 'service_role');
 
-CREATE POLICY "Allow service role full access to tasks" ON tasks FOR ALL USING (auth.role () = 'service_role');
+CREATE POLICY "Allow service role full access to archon_tasks" ON archon_tasks FOR ALL USING (auth.role () = 'service_role');
 
-CREATE POLICY "Allow service role full access to project_sources" ON project_sources FOR ALL USING (auth.role () = 'service_role');
+CREATE POLICY "Allow service role full access to archon_project_sources" ON archon_project_sources FOR ALL USING (auth.role () = 'service_role');
 
-CREATE POLICY "Allow service role full access to document_versions" ON document_versions FOR ALL USING (auth.role () = 'service_role');
+CREATE POLICY "Allow service role full access to archon_document_versions" ON archon_document_versions FOR ALL USING (auth.role () = 'service_role');
 
-CREATE POLICY "Allow service role full access to prompts" ON prompts FOR ALL USING (auth.role () = 'service_role');
+CREATE POLICY "Allow service role full access to archon_prompts" ON archon_prompts FOR ALL USING (auth.role () = 'service_role');
 
 -- Create RLS policies for authenticated users
-CREATE POLICY "Allow authenticated users to read and update projects" ON projects FOR ALL TO authenticated USING (true);
+CREATE POLICY "Allow authenticated users to read and update archon_projects" ON archon_projects FOR ALL TO authenticated USING (true);
 
-CREATE POLICY "Allow authenticated users to read and update tasks" ON tasks FOR ALL TO authenticated USING (true);
+CREATE POLICY "Allow authenticated users to read and update archon_tasks" ON archon_tasks FOR ALL TO authenticated USING (true);
 
-CREATE POLICY "Allow authenticated users to read and update project_sources" ON project_sources FOR ALL TO authenticated USING (true);
+CREATE POLICY "Allow authenticated users to read and update archon_project_sources" ON archon_project_sources FOR ALL TO authenticated USING (true);
 
-CREATE POLICY "Allow authenticated users to read document_versions" ON document_versions FOR
+CREATE POLICY "Allow authenticated users to read archon_document_versions" ON archon_document_versions FOR
 SELECT TO authenticated USING (true);
 
-CREATE POLICY "Allow authenticated users to read prompts" ON prompts FOR
+CREATE POLICY "Allow authenticated users to read archon_prompts" ON archon_prompts FOR
 SELECT TO authenticated USING (true);
 
 -- =====================================================
@@ -799,7 +935,7 @@ SELECT TO authenticated USING (true);
 
 -- Seed with default prompts for each content type
 INSERT INTO
-    prompts (
+    archon_prompts (
         prompt_name,
         prompt,
         description

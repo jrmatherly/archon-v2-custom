@@ -8,8 +8,7 @@ Keeps the main projects_api.py file focused on REST endpoints.
 # Removed direct logging import - using unified config
 import asyncio
 import time
-from dataclasses import asdict, dataclass
-from typing import Any, Dict, Optional
+from typing import Dict
 
 from ..config.logfire_config import get_logger
 from ..services.background_task_manager import get_task_manager
@@ -650,6 +649,11 @@ async def crawl_stop(sid, data):
 
 # Document Synchronization Socket.IO Event Handlers
 # Real-time document collaboration with conflict resolution
+
+import json
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 
 @dataclass

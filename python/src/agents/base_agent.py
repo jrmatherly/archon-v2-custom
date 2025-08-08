@@ -161,7 +161,7 @@ class BaseAgent(ABC, Generic[DepsT, OutputT]):
 
     def __init__(
         self,
-        model: str = "openai:gpt-4.1-nano",
+        model: str = "openai:gpt-4o",
         name: str = None,
         retries: int = 3,
         enable_rate_limiting: bool = True,

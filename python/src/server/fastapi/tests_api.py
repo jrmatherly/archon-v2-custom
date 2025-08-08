@@ -320,6 +320,56 @@ async def execute_ui_tests(execution_id: str) -> TestExecution:
             "UI tests are currently simulated. Real execution requires Docker-in-Docker setup."
         )
 
+        execution.process = process
+        execution.status = TestStatus.RUNNING
+
+        # Stream output in real-time
+        await stream_process_output(execution_id, process)
+
+        # Wait for completion
+        exit_code = await process.wait()
+        execution.exit_code = exit_code
+        execution.completed_at = datetime.now()
+
+        # Copy coverage reports from frontend container to server directory
+        if exit_code == 0:
+            try:
+                # Copy coverage summary JSON
+                copy_cmd = [
+                    "docker",
+                    "cp",
+                    "archon-frontend-1:/app/archon-ui-main/coverage/coverage-summary.json",
+                    "/app/coverage_reports/vitest/",
+                ]
+                await asyncio.create_subprocess_exec(*copy_cmd)
+
+                # Copy HTML coverage report directory
+                copy_html_cmd = [
+                    "docker",
+                    "cp",
+                    "archon-frontend-1:/app/archon-ui-main/coverage/",
+                    "/app/coverage_reports/vitest/html",
+                ]
+                await asyncio.create_subprocess_exec(*copy_html_cmd)
+
+            except Exception as e:
+                logger.warning(f"Failed to copy coverage reports: {e}")
+
+        if exit_code == 0:
+            execution.status = TestStatus.COMPLETED
+            execution.summary = {
+                "result": "All React UI tests passed",
+                "exit_code": exit_code,
+            }
+        else:
+            execution.status = TestStatus.FAILED
+            execution.summary = {
+                "result": "Some React UI tests failed",
+                "exit_code": exit_code,
+            }
+
+        logger.info(f"React UI tests completed with exit code: {exit_code}")
+
     except Exception as e:
         logger.error(f"Error executing React UI tests: {e}")
         execution.status = TestStatus.FAILED
@@ -352,9 +402,11 @@ async def execute_ui_tests(execution_id: str) -> TestExecution:
 
 
 async def stream_process_output(execution_id: str, process: asyncio.subprocess.Process):
-    """Stream process output to WebSocket clients for MCP tests."""
+    """Stream process output to WebSocket clients with improved real-time handling."""
     execution = test_executions[execution_id]
-    logger.info(f"Starting output streaming for execution_id: {execution_id}")
+    logger.info(
+        f"[DEBUG] Starting stream_process_output for execution_id: {execution_id}"
+    )
 
     # Send initial status update
     await websocket_manager.broadcast_to_execution(
@@ -367,6 +419,8 @@ async def stream_process_output(execution_id: str, process: asyncio.subprocess.P
         },
     )
 
+    line_count = 0
+
     while True:
         try:
             # Use a timeout to prevent hanging
@@ -375,10 +429,14 @@ async def stream_process_output(execution_id: str, process: asyncio.subprocess.P
                 break
 
             decoded_line = line.decode("utf-8").rstrip()
-            if decoded_line:  # Only process non-empty lines
+            line_count += 1
+            logger.info(
+                f"[DEBUG] Line {line_count}: {decoded_line[:100]}..."
+            )  # Log first 100 chars
+            if decoded_line:  # Only add non-empty lines
                 execution.output_lines.append(decoded_line)
 
-                # Broadcast to WebSocket clients
+                # Broadcast to WebSocket clients immediately
                 await websocket_manager.broadcast_to_execution(
                     execution_id,
                     {
@@ -408,7 +466,7 @@ async def stream_process_output(execution_id: str, process: asyncio.subprocess.P
             logger.error(f"[DEBUG] Exception details: {str(e)}")
             break
 
-    logger.info(f"Output streaming completed for execution_id: {execution_id}")
+    logger.info(f"[DEBUG] Stream ended. Total lines read: {line_count}")
 
 
 async def execute_tests_background(execution_id: str, test_type: TestType):

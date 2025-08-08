@@ -767,7 +767,7 @@ class CrawlOrchestrationService:
                         safe_logfire_info(
                             f"Attempting fallback source creation for '{source_id}'"
                         )
-                        self.supabase_client.table("sources").upsert(
+                        self.supabase_client.table("archon_sources").upsert(
                             {
                                 "source_id": source_id,
                                 "title": source_id,  # Use source_id as title fallback
@@ -800,7 +800,7 @@ class CrawlOrchestrationService:
             for source_id in unique_source_ids:
                 try:
                     source_check = (
-                        self.supabase_client.table("sources")
+                        self.supabase_client.table("archon_sources")
                         .select("source_id")
                         .eq("source_id", source_id)
                         .execute()
@@ -1374,7 +1374,7 @@ class CrawlOrchestrationService:
                         safe_logfire_info(
                             f"Attempting fallback source creation for '{source_id}'"
                         )
-                        self.supabase_client.table("sources").upsert(
+                        self.supabase_client.table("archon_sources").upsert(
                             {
                                 "source_id": source_id,
                                 "title": source_id,  # Use source_id as title fallback
@@ -1407,7 +1407,7 @@ class CrawlOrchestrationService:
             for source_id in unique_source_ids:
                 try:
                     source_check = (
-                        self.supabase_client.table("sources")
+                        self.supabase_client.table("archon_sources")
                         .select("source_id")
                         .eq("source_id", source_id)
                         .execute()

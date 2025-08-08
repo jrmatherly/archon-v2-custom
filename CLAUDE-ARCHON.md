@@ -9,7 +9,7 @@
 
   VIOLATION CHECK: If you used TodoWrite first, you violated this rule. Stop and restart with Archon.
 
-# CRITICAL: CODE OPERATIONS RULE
+## CRITICAL: CODE OPERATIONS RULE
 
   For ALL code search and editing operations:
 
@@ -18,7 +18,7 @@
   3. Traditional tools (grep, sed) are FALLBACK ONLY
   4. This applies to ALL agents and subagents
 
-# Archon Integration & Workflow
+## Archon Integration & Workflow
 
 **CRITICAL: This project uses Archon MCP server for knowledge management, task tracking, and project organization. ALWAYS start with Archon MCP server task management.**
 
@@ -390,7 +390,7 @@ archon:manage_task(
 - [ ] Basic functionality tested
 - [ ] Documentation updated if needed
 
-# important-instruction-reminders
+## important-instruction-reminders
 
 Do what has been asked; nothing more, nothing less.
 ALWAYS use Serena MCP for code operations, traditional tools as fallback only.
