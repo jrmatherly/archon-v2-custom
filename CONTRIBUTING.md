@@ -12,7 +12,7 @@ Archon is a **microservices-based engine** that provides AI coding assistants wi
 
 Archon uses true microservices architecture with clear separation of concerns:
 
-```mermaid
+```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend UI   │    │  Server (API)   │    │   MCP Server    │    │ Agents Service  │
 │                 │    │                 │    │                 │    │                 │
@@ -34,17 +34,17 @@ Archon uses true microservices architecture with clear separation of concerns:
 
 ### Service Responsibilities
 
-| Service | Location | Purpose | Key Features |
-|---------|----------|---------|--------------|
-| **Frontend** | `archon-ui-main/` | Web interface and dashboard | React, TypeScript, TailwindCSS, Socket.IO client |
-| **Server** | `python/src/server/` | Core business logic and APIs | FastAPI, service layer, Socket.IO broadcasts, all LLM/embedding operations |
-| **MCP Server** | `python/src/mcp/` | MCP protocol interface | Lightweight HTTP wrapper, 14 MCP tools, session management |
-| **Agents** | `python/src/agents/` | PydanticAI agent hosting | Document and RAG agents, streaming responses |
+| Service        | Location             | Purpose                      | Key Features                                                               |
+| -------------- | -------------------- | ---------------------------- | -------------------------------------------------------------------------- |
+| **Frontend**   | `archon-ui-main/`    | Web interface and dashboard  | React, TypeScript, TailwindCSS, Socket.IO client                           |
+| **Server**     | `python/src/server/` | Core business logic and APIs | FastAPI, service layer, Socket.IO broadcasts, all LLM/embedding operations |
+| **MCP Server** | `python/src/mcp/`    | MCP protocol interface       | Lightweight HTTP wrapper, 14 MCP tools, session management                 |
+| **Agents**     | `python/src/agents/` | PydanticAI agent hosting     | Document and RAG agents, streaming responses                               |
 
 ### Communication Patterns
 
 - **HTTP-based**: All inter-service communication uses HTTP APIs
-- **Socket.IO**: Real-time updates from Server to Frontend  
+- **Socket.IO**: Real-time updates from Server to Frontend
 - **MCP Protocol**: AI clients connect to MCP Server via SSE or stdio
 - **No Direct Imports**: Services are truly independent with no shared code dependencies
 
@@ -114,7 +114,7 @@ After forking the repository, you'll need to:
    # Clone your fork (replace 'your-username' with your GitHub username)
    git clone https://github.com/your-username/archon.git
    cd archon
-   
+
    # Add upstream remote to sync with main repository later
    git remote add upstream https://github.com/coleam00/archon.git
    ```
@@ -122,7 +122,6 @@ After forking the repository, you'll need to:
 2. **🤖 AI Coding Assistant Setup**
 
    **IMPORTANT**: If you're using AI coding assistants to help contribute to Archon, set up our global rules for optimal results.
-
    - **Claude Code**: ✅ Already configured! The `CLAUDE.md` file is automatically used
    - **Cursor**: Copy `CLAUDE.md` content to a new `.cursorrules` file in the project root
    - **Windsurf**: Copy `CLAUDE.md` content to a new `.windsurfrules` file in the project root
@@ -157,7 +156,7 @@ After forking the repository, you'll need to:
    ```bash
    # First time pushing this branch
    git push -u origin feature/your-feature-name
-   
+
    # For subsequent pushes to the same branch
    git push
    ```
@@ -184,7 +183,7 @@ After forking the repository, you'll need to:
    # Backend tests
    cd python && python -m pytest
 
-   # Frontend tests  
+   # Frontend tests
    cd archon-ui-main && npm run test
 
    # Full integration test
@@ -211,7 +210,7 @@ After forking the repository, you'll need to:
 **Key locations:**
 
 - **Service Layer**: `python/src/server/services/` - Core business logic organized by domain
-- **API Endpoints**: `python/src/server/fastapi/` - REST API route handlers  
+- **API Endpoints**: `python/src/server/fastapi/` - REST API route handlers
 - **MCP Tools**: `python/src/mcp/modules/` - MCP protocol implementations
 - **Agents**: `python/src/agents/` - PydanticAI agent implementations
 
@@ -283,10 +282,10 @@ After forking the repository, you'll need to:
    ```bash
    # Create service class in appropriate domain
    python/src/server/services/your_domain/your_service.py
-   
+
    # Add API endpoints
    python/src/server/fastapi/your_api.py
-   
+
    # Optional: Add MCP tools
    python/src/mcp/modules/your_module.py
    ```
@@ -296,7 +295,7 @@ After forking the repository, you'll need to:
    ```bash
    # Run Python tests
    cd python && python -m pytest tests/
-   
+
    # Run specific test categories
    python -m pytest -m unit      # Unit tests only
    python -m pytest -m integration  # Integration tests only
@@ -316,7 +315,7 @@ After forking the repository, you'll need to:
    ```bash
    # Create in appropriate category
    archon-ui-main/src/components/your-category/YourComponent.tsx
-   
+
    # Add to appropriate page or parent component
    archon-ui-main/src/pages/YourPage.tsx
    ```
@@ -326,10 +325,10 @@ After forking the repository, you'll need to:
    ```bash
    # Run frontend tests
    cd archon-ui-main && npm run test
-   
+
    # Run with coverage
    npm run test:coverage
-   
+
    # Run in UI mode
    npm run test:ui
    ```
@@ -354,7 +353,7 @@ After forking the repository, you'll need to:
 
 2. **Frontend (TypeScript)**
    - Use TypeScript with proper typing
-   - Follow existing component patterns and context usage  
+   - Follow existing component patterns and context usage
    - Include component tests for new UI features
    - Ensure responsive design and accessibility
 
@@ -366,7 +365,7 @@ After forking the repository, you'll need to:
 ### Performance Considerations
 
 - **Service Layer**: Keep business logic efficient, use async for I/O
-- **API Responses**: Consider pagination for large datasets  
+- **API Responses**: Consider pagination for large datasets
 - **Real-time Updates**: Use Socket.IO rooms appropriately
 - **Database**: Consider indexes for new query patterns
 
@@ -388,15 +387,15 @@ After forking the repository, you'll need to:
 async def your_new_tool(ctx: Context, param: str) -> str:
     """
     Tool description for AI clients.
-    
+
     Args:
         param: Description of parameter
-        
+
     Returns:
         JSON string with results
     """
     async with httpx.AsyncClient() as client:
-        response = await client.post(f"{API_URL}/api/your-endpoint", 
+        response = await client.post(f"{API_URL}/api/your-endpoint",
                                    json={"param": param})
         return response.json()
 ```
@@ -409,7 +408,7 @@ async def your_new_tool(ctx: Context, param: str) -> str:
 class YourService:
     def __init__(self, supabase_client=None):
         self.supabase_client = supabase_client or get_supabase_client()
-    
+
     def your_operation(self, param: str) -> Tuple[bool, Dict[str, Any]]:
         try:
             # Business logic here
@@ -453,7 +452,7 @@ class YourService:
 Contributors receive:
 
 - **Attribution**: Recognition in release notes and documentation
-- **Maintainer Track**: Path to maintainer role for consistent contributors  
+- **Maintainer Track**: Path to maintainer role for consistent contributors
 - **Community Impact**: Help improve AI development workflows for thousands of users
 
 ---
